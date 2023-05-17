@@ -1,6 +1,9 @@
+import { useState } from "react";
 import Link from "next/link";
 
 export default function Page() {
+  const [shithead, setShithead] = useState([]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="bg-slate-200 basis-8 px-4 flex justify-between items-center">
@@ -16,7 +19,10 @@ export default function Page() {
           <input className="grow px-3 py-1 tracking-widest" type="text" />
         </div>
 
-        <div className="grow">test</div>
+        <button className="mx-10 bg-slate-300 text-lg">
+          Fucking add a material you dickhead
+        </button>
+        <div className="grow">Fucking material list you motherfucker</div>
 
         <button className="py-1 mx-10 bg-slate-300 text-lg">Submit</button>
       </div>
