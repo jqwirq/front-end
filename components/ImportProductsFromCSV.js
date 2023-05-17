@@ -100,7 +100,7 @@ export default function CSV() {
 
   const handleClick = async () => {
     try {
-      const response = await fetch(API_URL + "/products/csv", {
+      const response = await fetch(API_URL + "/products-csv", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ export default function CSV() {
       const data = await response.json();
       console.log(data);
     } catch (e) {
-      console.error(e);
+      console.error(e); //this is bad
     }
 
     if (products.length === 0) {

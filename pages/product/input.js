@@ -1,24 +1,48 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Page() {
   const [productNo, setProductNo] = useState("");
-  const [isInput, setIsInput] = useState(false);
   const [materialsNo, setMaterialsNo] = useState([]);
 
   const materialNo = useRef();
 
-  const handleClickSubmit = () => {
+  const handleClickSubmit = async () => {
     if (productNo === "") {
       console.log("it's empty");
-    } else {
-      const data = {
-        productNo,
-        materialsNo,
-      };
+      return;
+    }
+
+    const product = {
+      productNo,
+      materialsNo,
+    };
+
+    console.log(product);
+
+    try {
+      const response = await fetch(API_URL + "/product", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...product,
+        }),
+      });
+      console.log(response);
+      const data = await response.json();
       console.log(data);
+    } catch (e) {
+      console.error(e); // this is bad
     }
   };
+
+  useEffect(() => {
+    console.log(materialsNo);
+  }, [materialsNo]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -30,7 +54,6 @@ export default function Page() {
       <h1 className="text-3xl text-center pt-2">Input Product</h1>
 
       <div className="grow flex flex-col gap-2 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
-        {/* INPUT PRODUCT NO */}
         <div className="text-lg flex gap-4 items-center px-4">
           <div className="">Product No</div>
           <div>:</div>
