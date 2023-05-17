@@ -12,7 +12,11 @@ export default function Page() {
     if (productNo === "") {
       console.log("it's empty");
     } else {
-      console.log("product not empty");
+      const data = {
+        productNo,
+        materialsNo,
+      };
+      console.log(data);
     }
   };
 
@@ -31,8 +35,8 @@ export default function Page() {
           <div className="">Product No</div>
           <div>:</div>
           <input
-            className="grow px-3 py-1 tracking-widest"
-            type="text"
+            className="grow px-3 py-1 tracking-widest appearance-none"
+            type="number"
             onChange={(e) => {
               const value = e.target.value;
               setProductNo(() => value);
@@ -46,7 +50,7 @@ export default function Page() {
           <input
             ref={materialNo}
             className="grow px-3 py-1 tracking-widest"
-            type="text"
+            type="number"
           />
 
           <button
@@ -56,6 +60,8 @@ export default function Page() {
 
               if (v === "") {
                 console.log("fuck you");
+              } else if (v.length < 8 || v.length > 12) {
+                console.log("you dick head");
               } else {
                 console.log(v);
                 setMaterialsNo((state) => [...state, v]);
@@ -66,12 +72,14 @@ export default function Page() {
             Add Material
           </button>
         </div>
-        <div className="grow">
-          {materialsNo.length === 0
-            ? "Empty"
-            : materialsNo.map((v, i) => {
-                return <div key={i}>{v}</div>;
-              })}
+        <div className="grow text-center">
+          {materialsNo.length === 0 ? (
+            <div>empty</div>
+          ) : (
+            materialsNo.map((v, i) => {
+              return <div key={i}>{v}</div>;
+            })
+          )}
         </div>
 
         <button

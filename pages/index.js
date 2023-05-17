@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="bg-slate-200 basis-8 px-4 flex items-center">
-        <div>Log In</div>
+        <div></div>
       </div>
 
       <h1 className="text-3xl text-center pt-2">Main Menu</h1>
