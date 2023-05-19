@@ -6,19 +6,32 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function Page() {
   const [productNo, setProductNo] = useState("");
   const [materialsNo, setMaterialsNo] = useState([]);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isError, setisError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [message, setMessage] = useState("");
 
   const materialNo = useRef();
 
+  const openModal = (type, message) => {
+    setIsModalOpen(true);
+    setModalType(type);
+    setMessage(message);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalType(null);
+    setMessage("");
+  };
+
   const handleClickSubmit = async () => {
     if (productNo === "") {
-      console.log("product is empty");
+      openModal(0, "Product is empty");
       return;
     }
 
     if (materialsNo.length === 0) {
-      console.log("material is empty");
+      openModal(0, "Material is empty");
       return;
     }
 
@@ -26,8 +39,6 @@ export default function Page() {
       productNo,
       materialsNo,
     };
-
-    console.log(product);
 
     try {
       const response = await fetch(API_URL + "/product", {
@@ -40,8 +51,9 @@ export default function Page() {
         }),
       });
       console.log(response);
-      const data = await response.json();
-      console.log(data);
+      const responseJson = await response.json();
+      openModal(0, responseJson.message);
+      console.log(responseJson);
     } catch (e) {
       console.error(e); // this is bad
     }
@@ -114,8 +126,8 @@ export default function Page() {
           </div>
 
           <button
-            className="py-1 mx-10 bg-slate-300 text-lg"
-            onClick={handleClickSubmit}
+            className="py-1 mx-10 bg-slate-300 text-lg hover:bg-slate-400 active:bg-slate-300"
+            // onClick={handleClickSubmit}
             disabled={productNo === ""}
           >
             Submit
@@ -123,13 +135,41 @@ export default function Page() {
         </div>
       </div>
 
-      {/* ALERT */}
-      <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
-        <div className="bg-slate-100 p-4 flex flex-col gap-4">
-          <div>alert message</div>
-          <button className="bg-slate-300">close</button>
-        </div>
-      </div>
+      {/* Feedback */}
+      {isModalOpen && (
+        <FeedbackModal
+          message={message}
+          closeModal={closeModal}
+          modalType={modalType}
+        />
+      )}
     </>
+  );
+}
+
+function FeedbackModal({ message, closeModal, modalType }) {
+  let bgColor;
+
+  switch (modalType) {
+    case 1:
+      bgColor = "bg-green-500";
+      break;
+    case 2:
+      bgColor = "bg-red-500";
+      break;
+    default:
+      bgColor = "bg-slate-100";
+  }
+
+  return (
+    <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
+      <div className={`p-4 flex flex-col items-center gap-4 ${bgColor}`}>
+        <div className="text-lg">{message}</div>
+
+        <button onClick={closeModal} className="bg-slate-300 py-1 px-2">
+          Close
+        </button>
+      </div>
+    </div>
   );
 }
