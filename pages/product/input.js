@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const MIN_PRODUCT_CHARACTER = 10;
+const MAX_PRODUCT_CHARACTER = 12;
+const MIN_MATERIAL_CHARACTER = 10;
+const MAX_MATERIAL_CHARACTER = 12;
 
 export default function Page() {
   const [productNo, setProductNo] = useState("");
@@ -10,6 +14,7 @@ export default function Page() {
   const [modalType, setModalType] = useState(null);
   const [message, setMessage] = useState("");
 
+  const productNoRef = useRef();
   const materialNo = useRef();
 
   const openModal = (type, message) => {
@@ -22,6 +27,20 @@ export default function Page() {
     setIsModalOpen(false);
     setModalType(null);
     setMessage("");
+  };
+
+  const emptyField = () => {
+    productNoRef.current.value = "";
+    setProductNo("");
+    setMaterialsNo([]);
+  };
+
+  const handleDeleteItem = (index) => {
+    setMaterialsNo((prevState) => {
+      const newArray = [...prevState]; // Create a copy of the state array
+      newArray.splice(index, 1); // Remove the item at the specified index
+      return newArray; // Update the state with the new array
+    });
   };
 
   const handleClickSubmit = async () => {
@@ -54,8 +73,10 @@ export default function Page() {
       const responseJson = await response.json();
       openModal(0, responseJson.message);
       console.log(responseJson);
+      emptyField();
     } catch (e) {
       console.error(e); // this is bad
+    } finally {
     }
   };
 
@@ -66,7 +87,7 @@ export default function Page() {
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        <div className="bg-slate-200 basis-8 px-4 flex justify-between items-center">
+        <div className="bg-slate-900 text-slate-200 basis-8 px-4 flex justify-between items-center">
           <Link className="" href="/product">
             back
           </Link>
@@ -79,6 +100,7 @@ export default function Page() {
             <div>:</div>
             <input
               className="grow px-3 py-1 tracking-widest appearance-none"
+              ref={productNoRef}
               type="number"
               onChange={(e) => {
                 const value = e.target.value;
@@ -97,14 +119,20 @@ export default function Page() {
             />
 
             <button
-              className="bg-slate-300 p-1 text-xs"
+              className="bg-slate-300 p-1 text-xs hover:bg-slate-400 active:bg-slate-300"
               onClick={() => {
                 const v = materialNo.current.value;
 
                 if (v === "") {
-                  console.log("empty");
-                } else if (v.length < 8 || v.length > 12) {
-                  console.log("length");
+                  openModal(0, "Please input material no.");
+                } else if (
+                  v.length < MIN_MATERIAL_CHARACTER ||
+                  v.length > MAX_MATERIAL_CHARACTER
+                ) {
+                  openModal(
+                    0,
+                    `Please input between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
+                  );
                 } else {
                   console.log(v);
                   setMaterialsNo((state) => [...state, v]);
@@ -115,19 +143,36 @@ export default function Page() {
               Add Material
             </button>
           </div>
-          <div className="grow text-center">
+          <div className="grow flex flex-col">
             {materialsNo.length === 0 ? (
-              <div>empty</div>
+              <div className="grow flex h-full justify-center items-center text-slate-400">
+                empty
+              </div>
             ) : (
               materialsNo.map((v, i) => {
-                return <div key={i}>{v}</div>;
+                return (
+                  <div
+                    className="flex justify-center items-center text-lg gap-2"
+                    key={i}
+                  >
+                    <div>{v}</div>
+                    <button
+                      className="bg-slate-300 px-2 rounded-lg"
+                      onClick={() => {
+                        handleDeleteItem(i);
+                      }}
+                    >
+                      X
+                    </button>
+                  </div>
+                );
               })
             )}
           </div>
 
           <button
             className="py-1 mx-10 bg-slate-300 text-lg hover:bg-slate-400 active:bg-slate-300"
-            // onClick={handleClickSubmit}
+            onClick={handleClickSubmit}
             disabled={productNo === ""}
           >
             Submit
@@ -166,7 +211,10 @@ function FeedbackModal({ message, closeModal, modalType }) {
       <div className={`p-4 flex flex-col items-center gap-4 ${bgColor}`}>
         <div className="text-lg">{message}</div>
 
-        <button onClick={closeModal} className="bg-slate-300 py-1 px-2">
+        <button
+          onClick={closeModal}
+          className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 py-1 px-2"
+        >
           Close
         </button>
       </div>
