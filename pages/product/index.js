@@ -5,7 +5,7 @@ export default function Page() {
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        <div className="bg-slate-200 basis-8 px-4 flex justify-between items-center">
+        <div className="bg-slate-900 text-slate-200 basis-8 px-4 flex justify-between items-center">
           <Link className="" href="/">
             back
           </Link>
