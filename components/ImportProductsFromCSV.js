@@ -27,8 +27,8 @@ export default function CSV() {
   };
 
   const emptyField = () => {
-    productNoRef.current.value = "";
-    setMaterialsNo([]);
+    setProducts([]);
+    fileInput.current.value = "";
   };
 
   const handleFileChange = (event) => {
@@ -137,19 +137,26 @@ export default function CSV() {
           data: products,
         }),
       });
-      console.log(response);
-      const data = await response.json();
-      console.log(data);
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          const responseJson = await response.json();
+          openModal(0, responseJson.message);
+          emptyField();
+          return;
+        }
+      }
+
+      const responseJson = await response.json();
+      openModal(0, responseJson.message);
+      emptyField();
     } catch (e) {
       console.error(e); //this is bad
     }
-
-    setProducts([]);
-    fileInput.current.value = "";
   };
 
   useEffect(() => {
-    console.log("useEffect");
+    console.log("products useEffect");
     console.log(products);
   }, [products]);
 
@@ -157,14 +164,17 @@ export default function CSV() {
     <>
       <input
         ref={fileInput}
-        className="cursor-pointer bg-slate-300 p-2 rounded-md"
+        className="cursor-pointer bg-slate-300 hover:bg-slate-400 p-2"
         type="file"
         accept=".csv"
         onChange={handleFileChange}
         disabled={isLoading}
       />
 
-      <button className="w-[50%] p-2" onClick={handleClickSubmit}>
+      <button
+        className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+        onClick={handleClickSubmit}
+      >
         Submit
       </button>
 
@@ -199,7 +209,7 @@ function FeedbackModal({ message, closeModal, modalType }) {
       <div
         className={`p-4 max-w-[80%] flex flex-col items-center gap-4 ${bgColor}`}
       >
-        <div className="text-lg">{message}</div>
+        <div className="text-2xl">{message}</div>
 
         <button
           onClick={closeModal}
