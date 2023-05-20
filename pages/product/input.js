@@ -2,20 +2,23 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const MIN_PRODUCT_CHARACTER = 10;
-const MAX_PRODUCT_CHARACTER = 12;
-const MIN_MATERIAL_CHARACTER = 10;
-const MAX_MATERIAL_CHARACTER = 12;
+const MIN_PRODUCT_LENGTH = 8;
+const MAX_PRODUCT_LENGTH = 10;
+const MIN_MATERIAL_LENGTH = 8;
+const MAX_MATERIAL_LENGTH = 10;
 
 export default function Page() {
   const [productNo, setProductNo] = useState("");
+  const [materialNo, setMaterialNo] = useState("");
+  const [isProductNoValid, setIsProductNoValid] = useState(true);
+  const [isMaterialNoValid, setIsMaterialNoValid] = useState(true);
   const [materialsNo, setMaterialsNo] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [message, setMessage] = useState("");
 
   const productNoRef = useRef();
-  const materialNo = useRef();
+  const materialNoRef = useRef();
 
   const openModal = (type, message) => {
     setIsModalOpen(true);
@@ -31,36 +34,71 @@ export default function Page() {
 
   const emptyField = () => {
     productNoRef.current.value = "";
-    setProductNo("");
     setMaterialsNo([]);
   };
 
-  const handleDeleteItem = (index) => {
+  const handleAddMaterial = () => {
+    if (productNo === "") {
+      openModal(0, "Please input product number first!");
+      return;
+    }
+
+    const v = materialNoRef.current.value;
+
+    if (v === "") {
+      openModal(
+        0,
+        "The material number field is empty. Please input material number"
+      );
+    } else if (
+      v.length < MIN_MATERIAL_LENGTH ||
+      v.length > MAX_MATERIAL_LENGTH
+    ) {
+      openModal(
+        0,
+        `Please input material number between ${MIN_MATERIAL_LENGTH} and ${MAX_MATERIAL_LENGTH} characters!`
+      );
+    } else {
+      setMaterialsNo((state) => [...state, v]);
+      materialNoRef.current.value = "";
+    }
+  };
+
+  const handleInputProductNoChange = (e) => {
+    setProductNo(e.target.value);
+  };
+
+  const handleInputMaterialNoChange = (e) => {
+    setMaterialNo(e.target.value);
+  };
+
+  const handleClickDeleteMaterial = (index) => {
     setMaterialsNo((prevState) => {
-      const newArray = [...prevState]; // Create a copy of the state array
-      newArray.splice(index, 1); // Remove the item at the specified index
-      return newArray; // Update the state with the new array
+      const newArray = [...prevState];
+      newArray.splice(index, 1);
+      return newArray;
     });
   };
 
   const handleClickSubmit = async () => {
     if (productNo === "") {
-      openModal(0, "Product is empty");
+      openModal(0, "Please input product number is empty!");
       return;
     }
 
     if (
-      productNo.length < MIN_PRODUCT_CHARACTER ||
-      productNo.length > MAX_MATERIAL_CHARACTER
+      productNo.length < MIN_PRODUCT_LENGTH ||
+      productNo.length > MAX_PRODUCT_LENGTH
     ) {
       openModal(
         0,
-        `Please input product no. between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
+        `Please input product number between ${MIN_PRODUCT_LENGTH} and ${MAX_PRODUCT_LENGTH} characters!`
       );
+      return;
     }
 
     if (materialsNo.length === 0) {
-      openModal(0, "Material is empty");
+      openModal(0, "The materials is empty. Please input material!");
       return;
     }
 
@@ -79,19 +117,34 @@ export default function Page() {
           ...product,
         }),
       });
-      console.log(response);
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          const responseJson = await response.json();
+          openModal(0, responseJson.message);
+          return;
+        }
+      }
+
+      // Success
       const responseJson = await response.json();
       openModal(0, responseJson.message);
-      console.log(responseJson);
       emptyField();
     } catch (e) {
       console.error(e); // this is bad
-    } finally {
     }
   };
 
   useEffect(() => {
-    console.log(materialsNo);
+    setIsProductNoValid(/^\d*$/.test(productNo));
+  }, [productNo]);
+
+  useEffect(() => {
+    setIsMaterialNoValid(/^\d*$/.test(materialNo));
+  }, [materialNo]);
+
+  useEffect(() => {
+    console.log("materialsNo (useEffect)", materialsNo);
   }, [materialsNo]);
 
   return (
@@ -104,51 +157,49 @@ export default function Page() {
         </div>
         <h1 className="text-3xl text-center pt-2">Input Product</h1>
 
-        <div className="grow flex flex-col gap-2 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
-          <div className="text-lg flex gap-4 items-center px-4">
-            <div className="">Product No</div>
-            <div>:</div>
-            <input
-              className="grow px-3 py-1 tracking-widest appearance-none"
-              ref={productNoRef}
-              type="number"
-              onChange={(e) => {
-                const value = e.target.value;
-                setProductNo(() => value);
-              }}
-            />
+        <div className="grow flex flex-col gap-4 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
+          <div className="text-lg flex gap-4 px-4">
+            <div className="self-start py-1">Product No</div>
+            <div className="self-start py-1">:</div>
+            <div className="grow flex flex-col">
+              <input
+                className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
+                  isProductNoValid
+                    ? "focus:ring-slate-500"
+                    : "focus:ring-red-500"
+                }`}
+                ref={productNoRef}
+                type="text"
+                onChange={handleInputProductNoChange}
+              />
+              {!isProductNoValid && (
+                <div className="text-red-500 text-xs">Input must number!</div>
+              )}
+            </div>
           </div>
 
-          <div className="text-base flex gap-4 items-center px-4">
-            <div className="">Material No</div>
-            <div>:</div>
-            <input
-              ref={materialNo}
-              className="grow px-3 py-1 tracking-widest"
-              type="number"
-            />
+          <div className="text-base flex gap-4 items-start px-4">
+            <div className="py-1">Material No</div>
+            <div className="py-1">:</div>
+            <div className="grow flex flex-col">
+              <input
+                ref={materialNoRef}
+                className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
+                  isMaterialNoValid
+                    ? "focus:ring-slate-500"
+                    : "focus:ring-red-500"
+                }`}
+                type="text"
+                onChange={handleInputMaterialNoChange}
+              />
+              {!isMaterialNoValid && (
+                <div className="text-red-500 text-xs">Input must number!</div>
+              )}
+            </div>
 
             <button
-              className="bg-slate-300 p-1 text-xs hover:bg-slate-400 active:bg-slate-300"
-              onClick={() => {
-                const v = materialNo.current.value;
-
-                if (v === "") {
-                  openModal(0, "Please input material no.");
-                } else if (
-                  v.length < MIN_MATERIAL_CHARACTER ||
-                  v.length > MAX_MATERIAL_CHARACTER
-                ) {
-                  openModal(
-                    0,
-                    `Please input material no. between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
-                  );
-                } else {
-                  console.log(v);
-                  setMaterialsNo((state) => [...state, v]);
-                  materialNo.current.value = "";
-                }
-              }}
+              className="bg-slate-300 p-1 my-1 text-xs hover:bg-slate-400 active:bg-slate-300"
+              onClick={handleAddMaterial}
             >
               Add Material
             </button>
@@ -169,7 +220,7 @@ export default function Page() {
                     <button
                       className="bg-slate-300 px-2 rounded-lg"
                       onClick={() => {
-                        handleDeleteItem(i);
+                        handleClickDeleteMaterial(i);
                       }}
                     >
                       X
@@ -181,7 +232,11 @@ export default function Page() {
           </div>
 
           <button
-            className="py-1 mx-10 bg-slate-300 text-lg hover:bg-slate-400 active:bg-slate-300"
+            className={`py-1 mx-10 text-lg ${
+              productNo !== ""
+                ? "bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
+                : "bg-slate-400"
+            }`}
             onClick={handleClickSubmit}
             disabled={productNo === ""}
           >
@@ -218,7 +273,9 @@ function FeedbackModal({ message, closeModal, modalType }) {
 
   return (
     <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
-      <div className={`p-4 flex flex-col items-center gap-4 ${bgColor}`}>
+      <div
+        className={`p-4 max-w-[80%] flex flex-col items-center gap-4 ${bgColor}`}
+      >
         <div className="text-lg">{message}</div>
 
         <button

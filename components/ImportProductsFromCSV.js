@@ -8,14 +8,34 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function CSV() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const [message, setMessage] = useState("");
 
   const fileInput = useRef();
+
+  const openModal = (type, message) => {
+    setIsModalOpen(true);
+    setModalType(type);
+    setMessage(message);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalType(null);
+    setMessage("");
+  };
+
+  const emptyField = () => {
+    productNoRef.current.value = "";
+    setMaterialsNo([]);
+  };
 
   const handleFileChange = (event) => {
     const files = event.target.files;
 
     if (files.length === 0) {
-      console.error("Please select a file");
+      openModal(0, "Please select a file!");
       return;
     }
 
@@ -98,8 +118,16 @@ export default function CSV() {
     };
   };
 
-  const handleClick = async () => {
+  const handleClickSubmit = async () => {
     try {
+      if (products.length === 0) {
+        openModal(
+          0,
+          "No data. please make sure you select a file before submitting!"
+        );
+        return;
+      }
+
       const response = await fetch(API_URL + "/products-csv", {
         method: "POST",
         headers: {
@@ -114,11 +142,6 @@ export default function CSV() {
       console.log(data);
     } catch (e) {
       console.error(e); //this is bad
-    }
-
-    if (products.length === 0) {
-      console.error("Fuck you");
-      return;
     }
 
     setProducts([]);
@@ -141,9 +164,50 @@ export default function CSV() {
         disabled={isLoading}
       />
 
-      <button className="w-[50%] p-2" onClick={handleClick}>
+      <button className="w-[50%] p-2" onClick={handleClickSubmit}>
         Submit
       </button>
+
+      {/* Feedback */}
+      {isModalOpen && (
+        <FeedbackModal
+          message={message}
+          closeModal={closeModal}
+          modalType={modalType}
+        />
+      )}
     </>
+  );
+}
+
+function FeedbackModal({ message, closeModal, modalType }) {
+  let bgColor;
+
+  switch (modalType) {
+    case 1:
+      bgColor = "bg-green-500";
+      break;
+    case 2:
+      bgColor = "bg-red-500";
+      break;
+    default:
+      bgColor = "bg-slate-100";
+  }
+
+  return (
+    <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
+      <div
+        className={`p-4 max-w-[80%] flex flex-col items-center gap-4 ${bgColor}`}
+      >
+        <div className="text-lg">{message}</div>
+
+        <button
+          onClick={closeModal}
+          className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 py-1 px-2"
+        >
+          Close
+        </button>
+      </div>
+    </div>
   );
 }
