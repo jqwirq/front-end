@@ -49,6 +49,16 @@ export default function Page() {
       return;
     }
 
+    if (
+      productNo.length < MIN_PRODUCT_CHARACTER ||
+      productNo.length > MAX_MATERIAL_CHARACTER
+    ) {
+      openModal(
+        0,
+        `Please input product no. between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
+      );
+    }
+
     if (materialsNo.length === 0) {
       openModal(0, "Material is empty");
       return;
@@ -131,7 +141,7 @@ export default function Page() {
                 ) {
                   openModal(
                     0,
-                    `Please input between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
+                    `Please input material no. between ${MIN_MATERIAL_CHARACTER} and ${MAX_MATERIAL_CHARACTER} characters`
                   );
                 } else {
                   console.log(v);
