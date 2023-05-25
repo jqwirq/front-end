@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const MIN_PRODUCT_LENGTH = 8;
+const MIN_PRODUCT_LENGTH = 4;
 const MAX_PRODUCT_LENGTH = 10;
-const MIN_MATERIAL_LENGTH = 8;
+const MIN_MATERIAL_LENGTH = 4;
 const MAX_MATERIAL_LENGTH = 10;
 
 export default function Page() {
@@ -148,61 +148,63 @@ export default function Page() {
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        <div className="bg-slate-900 text-slate-200 basis-8 px-4 flex justify-between items-center">
-          <Link className="" href="/product">
+        <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
+          <Link className="text-xl hover:text-slate-300 active:text-slate-200" href="/product">
             back
           </Link>
         </div>
-        <h1 className="text-3xl text-center pt-2">Input Product</h1>
 
-        <div className="grow flex flex-col gap-4 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
-          <div className="text-lg flex gap-4 px-4">
-            <div className="self-start py-1">Product No</div>
-            <div className="self-start py-1">:</div>
-            <div className="grow flex flex-col">
+        <h1 className="text-5xl text-center pt-4">Input Product</h1>
+
+        <div className="grow flex flex-col gap-8 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
+          <div className="text-3xl flex justify-between items-center">
+            <div className="">Product No</div>
+            <div className="relative basis-2/3">
               <input
-                className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
-                  isProductNoValid
-                    ? "focus:ring-slate-500"
-                    : "focus:ring-red-500"
-                }`}
+                className={`w-full px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${isProductNoValid
+                  ? "focus:ring-slate-500"
+                  : "focus:ring-red-500"
+                  }`}
                 ref={productNoRef}
                 type="text"
                 onChange={handleInputProductNoChange}
               />
               {!isProductNoValid && (
-                <div className="text-red-500 text-xs">Input must number!</div>
+                <div className="absolute bottom-[-18px] text-red-500 text-xs">Input must number!</div>
               )}
             </div>
           </div>
 
-          <div className="text-base flex gap-4 items-start px-4">
-            <div className="py-1">Material No</div>
-            <div className="py-1">:</div>
-            <div className="grow flex flex-col">
-              <input
-                ref={materialNoRef}
-                className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
-                  isMaterialNoValid
+          <div className="text-3xl flex justify-between items-center">
+            <div className="">Material No</div>
+            <div className="basis-2/3 flex gap-4 items-center">
+              <div className="relative grow flex flex-col">
+                <input
+                  ref={materialNoRef}
+                  className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${isMaterialNoValid
                     ? "focus:ring-slate-500"
                     : "focus:ring-red-500"
-                }`}
-                type="text"
-                onChange={handleInputMaterialNoChange}
-              />
-              {!isMaterialNoValid && (
-                <div className="text-red-500 text-xs">Input must number!</div>
-              )}
-            </div>
+                    }`}
+                  type="text"
+                  onChange={handleInputMaterialNoChange}
+                />
+                {!isMaterialNoValid && (
+                  <div className="absolute bottom-[-18px] text-red-500 text-xs">Input must number!</div>
+                )}
+              </div>
 
-            <button
-              className="bg-slate-300 p-1 my-1 text-xs hover:bg-slate-400 active:bg-slate-300"
-              onClick={handleAddMaterial}
-            >
-              Add Material
-            </button>
+              <button
+                className="hover:text-slate-500"
+                onClick={handleAddMaterial}
+              >
+                <svg className="w-[1em] h-[1em]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+
+              </button>
+            </div>
           </div>
-          <div className="grow flex flex-col gap-2">
+          <div className="grow overflow-scroll flex flex-col gap-2">
             {materialsNo.length === 0 ? (
               <div className="grow flex h-full justify-center items-center text-slate-400">
                 empty
@@ -244,11 +246,10 @@ export default function Page() {
           </div>
 
           <button
-            className={`py-1 mx-10 text-lg ${
-              productNo !== ""
-                ? "bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
-                : "bg-slate-400"
-            }`}
+            className={`py-2 text-3xl ${productNo !== ""
+              ? "bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
+              : "bg-slate-200 text-slate-300"
+              }`}
             onClick={handleClickSubmit}
             disabled={productNo === ""}
           >

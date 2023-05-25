@@ -164,7 +164,7 @@ export default function CSV() {
     <>
       <input
         ref={fileInput}
-        className="cursor-pointer bg-slate-300 hover:bg-slate-400 p-2"
+        className="py-4 text-5xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 cursor-pointer"
         type="file"
         accept=".csv"
         onChange={handleFileChange}
@@ -172,7 +172,7 @@ export default function CSV() {
       />
 
       <button
-        className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+        className="py-4 text-5xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
         onClick={handleClickSubmit}
       >
         Submit
