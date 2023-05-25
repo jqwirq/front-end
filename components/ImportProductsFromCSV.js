@@ -207,13 +207,13 @@ function FeedbackModal({ message, closeModal, modalType }) {
   return (
     <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
       <div
-        className={`p-4 max-w-[80%] flex flex-col items-center gap-4 ${bgColor}`}
+        className={`p-6 max-w-[80%] flex flex-col items-center gap-8 ${bgColor}`}
       >
-        <div className="text-2xl">{message}</div>
+        <div className="text-4xl">{message}</div>
 
         <button
           onClick={closeModal}
-          className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 py-1 px-2"
+          className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
         >
           Close
         </button>

@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Page() {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-slate-900 text-slate-200 basis-12 shrink-0 px-4 flex items-center">
+      <div className="bg-slate-900 text-slate-200 basis-12 shrink-0 flex items-center">
         <div></div>
       </div>
 

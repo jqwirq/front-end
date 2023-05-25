@@ -20,18 +20,18 @@ export default function Page() {
 
   return (
     <div className="min-h-screen max-h-screen flex flex-col">
-      <div className="bg-slate-900 text-slate-200 basis-8 shrink-0 px-4 flex justify-between items-center">
-        <Link className="" href="/product">
+      <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
+        <Link className="text-xl hover:text-slate-300 active:text-slate-200" href="/product">
           back
         </Link>
       </div>
 
-      <h1 className="text-3xl text-center pt-2">Product List</h1>
+      <h1 className="text-5xl text-center pt-4">Product List</h1>
 
-      <div className="grow overflow-auto flex flex-col flex-wrap gap-8 pb-10 pt-6 px-10 md:px-[11%] lg:px-[14%]">
+      <div className="grow overflow-auto flex flex-col pt-6 md:px-[8%] lg:px-[10%]">
         {products.length === 0 && <div className="text-center grow text-slate-400">empty</div>}
         {products.length !== 0 && (
-          <table className="table-auto border-collapse">
+          <table className="table-auto text-lg border-collapse">
             <thead className="border-b-2 border-slate-950">
               <tr>
                 <th className="p-2">Product No.</th>

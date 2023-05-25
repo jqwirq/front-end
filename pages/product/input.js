@@ -149,28 +149,34 @@ export default function Page() {
     <>
       <div className="min-h-screen flex flex-col">
         <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
-          <Link className="text-xl hover:text-slate-300 active:text-slate-200" href="/product">
+          <Link
+            className="text-xl hover:text-slate-300 active:text-slate-200"
+            href="/product"
+          >
             back
           </Link>
         </div>
 
         <h1 className="text-5xl text-center pt-4">Input Product</h1>
 
-        <div className="grow flex flex-col gap-8 pb-10 px-10 md:px-[11%] lg:px-[14%] pt-6">
+        <div className="grow flex flex-col gap-8 py-10 px-10 md:px-[8%] lg:px-[10%]">
           <div className="text-3xl flex justify-between items-center">
             <div className="">Product No</div>
             <div className="relative basis-2/3">
               <input
-                className={`w-full px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${isProductNoValid
-                  ? "focus:ring-slate-500"
-                  : "focus:ring-red-500"
-                  }`}
+                className={`w-full px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
+                  isProductNoValid
+                    ? "focus:ring-slate-500"
+                    : "focus:ring-red-500"
+                }`}
                 ref={productNoRef}
                 type="text"
                 onChange={handleInputProductNoChange}
               />
               {!isProductNoValid && (
-                <div className="absolute bottom-[-18px] text-red-500 text-xs">Input must number!</div>
+                <div className="absolute bottom-[-18px] text-red-500 text-xs">
+                  Input must number!
+                </div>
               )}
             </div>
           </div>
@@ -181,15 +187,18 @@ export default function Page() {
               <div className="relative grow flex flex-col">
                 <input
                   ref={materialNoRef}
-                  className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${isMaterialNoValid
-                    ? "focus:ring-slate-500"
-                    : "focus:ring-red-500"
-                    }`}
+                  className={`grow px-3 py-1 tracking-widest appearance-none focus:outline-none focus:ring-2 ${
+                    isMaterialNoValid
+                      ? "focus:ring-slate-500"
+                      : "focus:ring-red-500"
+                  }`}
                   type="text"
                   onChange={handleInputMaterialNoChange}
                 />
                 {!isMaterialNoValid && (
-                  <div className="absolute bottom-[-18px] text-red-500 text-xs">Input must number!</div>
+                  <div className="absolute bottom-[-18px] text-red-500 text-xs">
+                    Input must number!
+                  </div>
                 )}
               </div>
 
@@ -197,10 +206,20 @@ export default function Page() {
                 className="hover:text-slate-500"
                 onClick={handleAddMaterial}
               >
-                <svg className="w-[1em] h-[1em]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-[1em] h-[1em]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
-
               </button>
             </div>
           </div>
@@ -246,10 +265,11 @@ export default function Page() {
           </div>
 
           <button
-            className={`py-2 text-3xl ${productNo !== ""
-              ? "bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
-              : "bg-slate-200 text-slate-300"
-              }`}
+            className={`py-2 text-3xl ${
+              productNo !== ""
+                ? "bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
+                : "bg-slate-200 text-slate-300"
+            }`}
             onClick={handleClickSubmit}
             disabled={productNo === ""}
           >
@@ -287,13 +307,13 @@ function FeedbackModal({ message, closeModal, modalType }) {
   return (
     <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
       <div
-        className={`p-4 max-w-[80%] flex flex-col items-center gap-4 ${bgColor}`}
+        className={`p-6 max-w-[80%] flex flex-col items-center gap-8 ${bgColor}`}
       >
-        <div className="text-lg">{message}</div>
+        <div className="text-4xl">{message}</div>
 
         <button
           onClick={closeModal}
-          className="bg-slate-300 hover:bg-slate-400 active:bg-slate-300 py-1 px-2"
+          className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
         >
           Close
         </button>
