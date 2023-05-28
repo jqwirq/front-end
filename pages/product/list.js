@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Page() {
   const [products, setProducts] = useState([]);
+
+  const productNoRef = useRef();
 
   useEffect(() => {
     fetch(API_URL + "/products")
@@ -17,6 +19,20 @@ export default function Page() {
         console.error(err);
       });
   }, []);
+
+  const handleSearchProductSubmit = async (e) => {
+    e.preventDefault();
+    const no = productNoRef.current.value;
+    fetch(API_URL + "/products?no=" + no)
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        setProducts(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   return (
     <div className="min-h-screen max-h-screen flex flex-col">
@@ -31,10 +47,21 @@ export default function Page() {
 
       <h1 className="text-5xl text-center pt-4">Product List</h1>
 
-      <div className="grow overflow-auto flex flex-col pt-6 md:px-[8%] lg:px-[10%]">
+      <div className="grow flex flex-col pt-6 md:px-[8%] lg:px-[10%]">
+        <div className="flex">
+          <form
+            onSubmit={handleSearchProductSubmit}
+            className="flex items-center gap-6"
+          >
+            <label>Search by product no.</label>
+            <input ref={productNoRef} className="py-1 px-2 w-60" type="text" />
+          </form>
+        </div>
+
         {products.length === 0 && (
           <div className="text-center grow text-slate-400">empty</div>
         )}
+
         {products.length !== 0 && (
           <table className="table-auto text-lg border-collapse">
             <thead className="border-b-2 border-slate-950">
