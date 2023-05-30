@@ -47,13 +47,13 @@ export default function Page() {
 
       <h1 className="text-5xl text-center pt-4">Product List</h1>
 
-      <div className="grow flex flex-col pt-6 md:px-[8%] lg:px-[10%]">
+      <div className="grow flex flex-col gap-8 pt-6 md:px-[8%] lg:px-[10%]">
         <div className="flex">
           <form
             onSubmit={handleSearchProductSubmit}
             className="flex items-center gap-6"
           >
-            <label>Search by product no.</label>
+            <label className="text-lg">Search by product no.</label>
             <input ref={productNoRef} className="py-1 px-2 w-60" type="text" />
           </form>
         </div>
