@@ -405,12 +405,23 @@ function FeedbackModal({ message, closeModal, modalType, handleUpdateSubmit }) {
             <input type="password" className="p-2" />
           </div>
 
-          <button
-            type="submit"
-            className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
-          >
-            Submit
-          </button>
+          <div className="flex gap-8">
+            <button
+              type="submit"
+              className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+              onClick={() => {
+                closeModal();
+              }}
+            >
+              Close
+            </button>
+          </div>
         </form>
       </div>
     );
