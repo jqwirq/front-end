@@ -355,6 +355,7 @@ function YourPage({ responseJson: data }) {
           )}
         </div>
       </div>
+
       {/* Feedback */}
       {isModalOpen && (
         <FeedbackModal

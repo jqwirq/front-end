@@ -1,6 +1,41 @@
 import Link from "next/link";
+import { useState, useEffect } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Page() {
+  const [data, setData] = useState("");
+  const [eventSource, setEventSource] = useState(null);
+
+  const handleClick = () => {
+    if (!eventSource) {
+      const es = new EventSource(API_URL + "/events");
+      setEventSource(es);
+
+      es.onmessage = (event) => {
+        setData(event.data);
+      };
+
+      es.onerror = (err) => {
+        console.error("EventSource failed:", err);
+        es.close();
+        setEventSource(null);
+      };
+    }
+  };
+
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
+
+  useEffect(() => {
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [eventSource]);
+
   return (
     <>
       <div className="bg-slate-100 min-h-screen">
@@ -18,7 +53,7 @@ export default function Page() {
               <THE_FORMS />
             </div>
             <div className="col-start-1 col-end-6 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4 px-8 text-sm">
-              <THE_BUTTONS />
+              <THE_BUTTONS handleClick={handleClick} />
             </div>
             <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
               <THE_TIMER />
@@ -27,7 +62,7 @@ export default function Page() {
               <THE_BUTTONS_2 />
             </div>
             <div className="col-start-6 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4">
-              <THE_WEIGHT />
+              <THE_WEIGHT eventSource={eventSource} data={data} />
             </div>
           </div>
         </div>
@@ -36,10 +71,13 @@ export default function Page() {
   );
 }
 
-function THE_WEIGHT() {
+function THE_WEIGHT({ eventSource, data }) {
   return (
     <>
-      <div className="bg-yellow-200 w-4/5 p-1 py-2 text-center">2000.00 KG</div>
+      <div>{eventSource ? "Connected" : "Start SSE Request"}</div>
+      <div className="bg-yellow-200 w-4/5 p-1 py-2 text-center">
+        {data ? data : "0.00KG"}
+      </div>
       <div className="flex gap-2">
         <div className="bg-red-400">- 1980.00 KG.</div>
         <div className="bg-green-400">+ 2020.00 KG.</div>
@@ -80,11 +118,14 @@ function THE_BUTTONS_2() {
   );
 }
 
-function THE_BUTTONS() {
+function THE_BUTTONS({ handleClick }) {
   return (
     <>
       <div className="flex gap-4 basis-10 justify center">
-        <button className="bg-slate-400 hover:bg-slate-300 w-[100px]">
+        <button
+          onClick={handleClick}
+          className="bg-slate-400 hover:bg-slate-300 w-[100px]"
+        >
           2 ton
         </button>
         <button className="bg-slate-400 hover:bg-slate-300 w-[100px]">
