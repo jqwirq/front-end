@@ -50,19 +50,23 @@ export default function Page() {
 
           <div className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl">
             <div className="col-span-6 row-span-4 flex flex-col gap-4 px-8 text-sm justify-center">
-              <THE_FORMS />
+              <FormWeighing />
             </div>
+
             <div className="col-start-1 col-end-6 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4 px-8 text-sm">
               <THE_BUTTONS handleClick={handleClick} />
             </div>
+
             <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
               <THE_TIMER />
             </div>
+
             <div className="col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-sm">
               <THE_BUTTONS_2 />
             </div>
-            <div className="col-start-6 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4">
-              <THE_WEIGHT eventSource={eventSource} data={data} />
+
+            <div className="col-start-6 col-end-13 row-start-5 row-end-7 flex flex-col justify-start items-center gap-4">
+              <Weight eventSource={eventSource} data={data} />
             </div>
           </div>
         </div>
@@ -71,16 +75,15 @@ export default function Page() {
   );
 }
 
-function THE_WEIGHT({ eventSource, data }) {
+function Weight({ eventSource, data }) {
   return (
     <>
-      <div>{eventSource ? "Connected" : "Start SSE Request"}</div>
-      <div className="bg-yellow-200 w-4/5 p-1 py-2 text-center">
+      <div className="text-9xl bg-yellow-200 font-bold w-full p-4 text-center">
         {data ? data : "0.00KG"}
       </div>
-      <div className="flex gap-2">
-        <div className="bg-red-400">- 1980.00 KG.</div>
-        <div className="bg-green-400">+ 2020.00 KG.</div>
+      <div className="flex justify-center text-2xl text-center gap-2 w-full">
+        <div className="bg-red-400 basis-1/2 py-2 px-4">- 0 KG.</div>
+        <div className="bg-red-400 basis-1/2 py-2 px-4">+ 0 KG.</div>
       </div>
     </>
   );
@@ -144,7 +147,7 @@ function THE_BUTTONS({ handleClick }) {
   );
 }
 
-function THE_FORMS() {
+function FormWeighing() {
   return (
     <>
       <div className="flex justify-between items-center">
