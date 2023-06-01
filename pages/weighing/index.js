@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const WeighingProcessContext = createContext();
+
+function useWeighingContext() {
+  return useContext(WeighingProcessContext);
+}
 
 export default function Page() {
   const [data, setData] = useState("");
@@ -51,41 +57,43 @@ export default function Page() {
   }, [eventSource]);
 
   return (
-    <div className="bg-slate-100 min-h-screen">
-      <div className="min-h-screen max-h-screen flex flex-col">
-        <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
-          <Link
-            className="text-xl hover:text-slate-300 active:text-slate-200"
-            href="/"
+    <WeighingProcessContext.Provider value={{ products }}>
+      <div className="bg-slate-100 min-h-screen">
+        <div className="min-h-screen max-h-screen flex flex-col">
+          <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
+            <Link
+              className="text-xl hover:text-slate-300 active:text-slate-200"
+              href="/"
+            >
+              back
+            </Link>
+
+            <h1 className="tracking-widest font-semibold text-xl">
+              Weighing Process
+            </h1>
+          </div>
+
+          <div
+            className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
+            style={{
+              gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
+              gridTemplateColumns:
+                "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
+            }}
           >
-            back
-          </Link>
+            <FormWeighing />
 
-          <h1 className="tracking-widest font-semibold text-xl">
-            Weighing Process
-          </h1>
-        </div>
+            <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
 
-        <div
-          className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
-          style={{
-            gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
-            gridTemplateColumns:
-              "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
-          }}
-        >
-          <FormWeighing />
+            <Timers />
 
-          <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
+            <StartButton />
 
-          <Timers />
-
-          <StartButton />
-
-          <Weight eventSource={eventSource} data={data} />
+            <Weight eventSource={eventSource} data={data} />
+          </div>
         </div>
       </div>
-    </div>
+    </WeighingProcessContext.Provider>
   );
 }
 
@@ -167,6 +175,9 @@ function ScaleSelectButton({ handleSelectSSE }) {
 }
 
 function FormWeighing() {
+  const { products } = useWeighingContext();
+  console.log(products);
+
   return (
     <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-xl justify-center">
       <div className="flex justify-between items-center">
@@ -183,6 +194,12 @@ function FormWeighing() {
         <div>Product No.</div>
         <select className="w-[55%] bg-yellow-200 p-1 pl-4">
           <option value=""></option>
+          {products.length !== 0 &&
+            products.map((v) => (
+              <option key={v._id} value={v.no}>
+                {v.no}
+              </option>
+            ))}
         </select>
       </div>
 
