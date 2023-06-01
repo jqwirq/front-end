@@ -6,8 +6,22 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function Page() {
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
+  const [products, setProducts] = useState([]);
 
-  const handleClick = () => {
+  useEffect(() => {
+    fetch(API_URL + "/products")
+      .then((res) => {
+        return res.json();
+      })
+      .then((res) => {
+        console.log("setProducts, useEffect[]", res);
+        setProducts(res);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  // SSE
+  const handleSelectSSE = () => {
     if (!eventSource) {
       const es = new EventSource(API_URL + "/events");
       setEventSource(es);
@@ -63,7 +77,7 @@ export default function Page() {
           >
             <FormWeighing />
 
-            <ScaleSelectButton handleClick={handleClick} />
+            <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
 
             <Timers />
 
@@ -126,12 +140,12 @@ function StartButton() {
   );
 }
 
-function ScaleSelectButton({ handleClick }) {
+function ScaleSelectButton({ handleSelectSSE }) {
   return (
     <div className="col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl">
       <div className="flex w-full gap-4 justify-center items-center">
         <button
-          onClick={handleClick}
+          onClick={handleSelectSSE}
           className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
         >
           2 ton
