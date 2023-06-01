@@ -55,15 +55,17 @@ export default function Page() {
 
           <div
             className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
-            style={{ gridTemplateRows: "1fr 1fr 1fr 1fr 1fr 1.5fr" }}
+            style={{
+              gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
+              gridTemplateColumns:
+                "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
+            }}
           >
             <FormWeighing />
 
             <ScaleSelectButton handleClick={handleClick} />
 
-            <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
-              <THE_TIMER />
-            </div>
+            <Timers />
 
             <StartButton />
 
@@ -77,36 +79,36 @@ export default function Page() {
 
 function Weight({ eventSource, data }) {
   return (
-    <div className="col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-start items-center px-2 gap-4">
-      <div className="text-9xl bg-yellow-200 font-bold w-full p-4 text-center">
-        {data ? data : "0.00KG"}
+    <div className="col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-start items-center px-2 pt-6 gap-4">
+      <div className="text-8xl bg-yellow-200 font-bold w-full p-4 text-center">
+        {data ? data : "2000.00 Kg"}
       </div>
 
       <div className="flex justify-center text-3xl text-center gap-4 w-full">
-        <div className="bg-red-400 basis-1/2 py-2 px-4">- 0 KG.</div>
-        <div className="bg-red-400 basis-1/2 py-2 px-4">+ 0 KG.</div>
+        <div className="bg-red-400 basis-1/2 py-2 px-4">- 1980.00 Kg</div>
+        <div className="bg-red-400 basis-1/2 py-2 px-4">+ 2020.00 Kg</div>
       </div>
     </div>
   );
 }
 
-function THE_TIMER() {
+function Timers() {
   return (
-    <>
+    <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
       <div className="flex flex-col items-center">
-        <div className="text-xs">Duration per Product</div>
-        <div className="bg-black text-white text-center w-[120px] py-2">
+        <div className="text-lg">Duration per Product</div>
+        <div className="bg-black text-white text-center py-2 px-6 text-5xl">
           00:00:00
         </div>
       </div>
 
       <div className="flex flex-col items-center">
-        <div className="text-xs">Duration per Product</div>
-        <div className="bg-black text-white text-center w-[120px] py-2">
+        <div className="text-lg">Duration per Product</div>
+        <div className="bg-black text-white text-center py-2 px-6 text-5xl">
           00:00:00
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -154,51 +156,51 @@ function ScaleSelectButton({ handleClick }) {
 
 function FormWeighing() {
   return (
-    <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-md justify-center">
+    <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-xl justify-center">
       <div className="flex justify-between items-center">
         <div>SAP Order No.</div>
-        <input className="w-[50%] bg-yellow-200 p-1" type="text" />
+        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Batch No.</div>
-        <input className="w-[50%] bg-yellow-200 p-1" type="text" />
+        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Product No.</div>
-        <select className="w-[50%] bg-yellow-200 p-1">
+        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
           <option value=""></option>
         </select>
       </div>
 
       <div className="flex justify-between items-center">
         <div>Material No.</div>
-        <select className="w-[50%] bg-yellow-200 p-1">
+        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
           <option value="test">Test</option>
         </select>
       </div>
 
       <div className="flex justify-between items-center">
         <div>Packaging</div>
-        <select className="w-[50%] bg-yellow-200 p-1">
+        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
           <option value=""></option>
         </select>
       </div>
 
       <div className="flex justify-between items-center">
         <div>Batch No.</div>
-        <input className="w-[50%] bg-yellow-200 p-1" type="text" />
+        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Target Qty. (Kg.)</div>
-        <input className="w-[50%] bg-yellow-200 p-1" type="text" />
+        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Tolerance (%)</div>
-        <input className="w-[50%] bg-yellow-200 p-1" type="text" />
+        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
       </div>
     </div>
   );
