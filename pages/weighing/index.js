@@ -51,43 +51,41 @@ export default function Page() {
   }, [eventSource]);
 
   return (
-    <>
-      <div className="bg-slate-100 min-h-screen">
-        <div className="min-h-screen max-h-screen flex flex-col">
-          <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
-            <Link
-              className="text-xl hover:text-slate-300 active:text-slate-200"
-              href="/"
-            >
-              back
-            </Link>
-
-            <h1 className="tracking-widest font-semibold text-xl">
-              Weighing Process
-            </h1>
-          </div>
-
-          <div
-            className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
-            style={{
-              gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
-              gridTemplateColumns:
-                "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
-            }}
+    <div className="bg-slate-100 min-h-screen">
+      <div className="min-h-screen max-h-screen flex flex-col">
+        <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
+          <Link
+            className="text-xl hover:text-slate-300 active:text-slate-200"
+            href="/"
           >
-            <FormWeighing />
+            back
+          </Link>
 
-            <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
+          <h1 className="tracking-widest font-semibold text-xl">
+            Weighing Process
+          </h1>
+        </div>
 
-            <Timers />
+        <div
+          className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
+          style={{
+            gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
+            gridTemplateColumns:
+              "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
+          }}
+        >
+          <FormWeighing />
 
-            <StartButton />
+          <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
 
-            <Weight eventSource={eventSource} data={data} />
-          </div>
+          <Timers />
+
+          <StartButton />
+
+          <Weight eventSource={eventSource} data={data} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
