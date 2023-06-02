@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, useRef } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -15,6 +15,8 @@ export default function Page() {
 
   const [isWeighingProcess, setIsWeighingProcess] = useState(false);
   const [isMaterialProcess, setIsMaterialProcess] = useState(false);
+
+  const materialRef = useRef();
 
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
@@ -71,6 +73,7 @@ export default function Page() {
     setProduct,
     isWeighingProcess,
     setIsWeighingProcess,
+    materialRef,
   };
 
   return (
@@ -211,9 +214,11 @@ function ScaleSelectButton({ handleSelectSSE }) {
 }
 
 function FormWeighing() {
-  const { products, product, setProduct } = useWeighingContext();
+  const { products, product, setProduct, materialRef } = useWeighingContext();
 
   const handleProductChange = (e) => {
+    materialRef.current.value = "";
+
     const targetValue = e.target.value;
     console.log(targetValue);
     fetch(API_URL + "/product/" + targetValue)
@@ -257,6 +262,7 @@ function FormWeighing() {
         <select
           className="w-[55%] bg-yellow-200 p-1 pl-4"
           disabled={product === null}
+          ref={materialRef}
         >
           <option value=""></option>
           {product !== null &&
