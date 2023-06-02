@@ -13,16 +13,42 @@ export default function Page() {
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState(null);
 
-  const [isWeighingProcess, setIsWeighingProcess] = useState(false);
-  const [isMaterialProcess, setIsMaterialProcess] = useState(false);
+  const [sapNo, setSapNo] = useState("");
+  const [batchNo, setBatchNo] = useState("");
+  const [productNo, setProductNo] = useState("");
 
-  const sapNoRef = useRef();
-  const batchNoRef = useRef();
-  const productNoRef = useRef();
+  const [isWeighingProcess, setIsWeighingProcess] = useState(false);
+  const [productTime, setProductTime] = useState(0);
+  const [isMaterialProcess, setIsMaterialProcess] = useState(false);
+  const [materialTime, setMaterialTime] = useState(0);
+
+  const sapNoRef = useRef("");
+  const batchNoRef = useRef("");
+  const productNoRef = useRef("");
   const materialNoRef = useRef();
 
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
+
+  const isMainInputEmpty = () => {
+    const isEmpty = sapNo === "" || batchNo === "" || productNo === "";
+
+    if (isEmpty) return true;
+
+    return false;
+  };
+
+  const resetMain = () => {
+    sapNoRef.current.value = "";
+    setSapNo("");
+    batchNoRef.current.value = "";
+    setBatchNo("");
+    productNoRef.current.value = "";
+    setProductNo("");
+    materialNoRef.current.value = "";
+    setProduct(null);
+    setProductTime(0);
+  };
 
   useEffect(() => {
     fetch(API_URL + "/products")
@@ -35,10 +61,6 @@ export default function Page() {
       })
       .catch((err) => console.error(err));
   }, []);
-
-  useEffect(() => {
-    console.log("setProduct, useEffect[product]", product);
-  }, [product]);
 
   // SSE
   const handleSelectSSE = () => {
@@ -59,8 +81,28 @@ export default function Page() {
   };
 
   useEffect(() => {
-    console.log(data);
-  }, [data]);
+    let interval;
+    if (isWeighingProcess) {
+      interval = setInterval(() => {
+        setProductTime((prevTime) => prevTime + 100);
+      }, 100);
+    } else if (!isWeighingProcess) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isWeighingProcess]);
+
+  useEffect(() => {
+    let interval;
+    if (isMaterialProcess) {
+      interval = setInterval(() => {
+        setMaterialTime((prevTime) => prevTime + 100);
+      }, 100);
+    } else if (!isMaterialProcess) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isMaterialProcess]);
 
   useEffect(() => {
     return () => {
@@ -70,13 +112,44 @@ export default function Page() {
     };
   }, [eventSource]);
 
+  // useEffect(() => {
+  //   console.log("setProduct, useEffect[product]", product);
+  // }, [product]);
+
+  // useEffect(() => {
+  //   console.log(data);
+  // }, [data]);
+
+  // useEffect(() => {
+  //   if (sapNo !== "") {
+  //     console.log("setMainValue, useEffect[formValue]", sapNo);
+  //   }
+  // }, [sapNo, batchNo, productNo]);
+
   const value = {
     products,
     product,
     setProduct,
     isWeighingProcess,
     setIsWeighingProcess,
+    isMaterialProcess,
+    setIsMaterialProcess,
+    sapNoRef,
+    batchNoRef,
+    productNoRef,
     materialNoRef,
+    isMainInputEmpty,
+    productTime,
+    setProductTime,
+    materialTime,
+    setMaterialTime,
+    resetMain,
+    sapNo,
+    setSapNo,
+    batchNo,
+    setBatchNo,
+    productNo,
+    setProductNo,
   };
 
   return (
@@ -136,19 +209,31 @@ function Weight({ eventSource, data }) {
 }
 
 function Timers() {
+  const { productTime, materialTime, isWeighingProcess, isMaterialProcess } =
+    useWeighingContext();
+
   return (
     <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
       <div className="flex flex-col items-center">
         <div className="text-lg">Duration per Product</div>
         <div className="bg-black text-white text-center py-2 px-6 text-5xl">
-          00:00:00
+          <span>
+            {("0" + Math.floor((productTime / 60000) % 60)).slice(-2)}:
+          </span>
+          <span>{("0" + Math.floor((productTime / 1000) % 60)).slice(-2)}</span>
+          {/* <span>{("0" + ((productTime / 10) % 100)).slice(-2)}</span> */}
         </div>
       </div>
 
       <div className="flex flex-col items-center">
-        <div className="text-lg">Duration per Product</div>
+        <div className="text-lg">Duration per Material</div>
         <div className="bg-black text-white text-center py-2 px-6 text-5xl">
-          00:00:00
+          <span>
+            {("0" + Math.floor((materialTime / 60000) % 60)).slice(-2)}:
+          </span>
+          <span>
+            {("0" + Math.floor((materialTime / 1000) % 60)).slice(-2)}
+          </span>
         </div>
       </div>
     </div>
@@ -156,7 +241,12 @@ function Timers() {
 }
 
 function StartButton() {
-  const { isWeighingProcess, setIsWeighingProcess } = useWeighingContext();
+  const {
+    isWeighingProcess,
+    setIsWeighingProcess,
+    isMainInputEmpty,
+    resetMain,
+  } = useWeighingContext();
 
   return (
     <div className="px-2 pb-8 col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-xl">
@@ -171,26 +261,28 @@ function StartButton() {
         Start material
       </button>
 
-      <button
-        onClick={() => {
-          setIsWeighingProcess(true);
-        }}
-        disabled={isWeighingProcess}
-        className={`basis-1/2 text-white py-4 ${
-          isWeighingProcess
-            ? "bg-green-700"
-            : "bg-green-600 hover:bg-green-500 "
-        }`}
-      >
-        Start product
-      </button>
-      {isWeighingProcess && (
+      {isWeighingProcess ? (
         <button
           onClick={() => {
+            resetMain();
             setIsWeighingProcess(false);
           }}
         >
-          test
+          Stop
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            setIsWeighingProcess(true);
+          }}
+          disabled={isWeighingProcess || isMainInputEmpty()}
+          className={`basis-1/2 text-white py-4 ${
+            isWeighingProcess || isMainInputEmpty()
+              ? "bg-green-700"
+              : "bg-green-600 hover:bg-green-500 "
+          }`}
+        >
+          Start product
         </button>
       )}
     </div>
@@ -226,19 +318,31 @@ function ScaleSelectButton({ handleSelectSSE }) {
 }
 
 function FormWeighing() {
-  const { products, product, setProduct, materialNoRef } = useWeighingContext();
+  const {
+    products,
+    product,
+    setProduct,
+    sapNoRef,
+    batchNoRef,
+    productNoRef,
+    materialNoRef,
+    setSapNo,
+    setBatchNo,
+    setProductNo,
+    isWeighingProcess,
+  } = useWeighingContext();
 
   const handleProductChange = (e) => {
     materialNoRef.current.value = "";
-
     const targetValue = e.target.value;
-    console.log(targetValue);
+
+    setProductNo(targetValue);
     if (targetValue) {
       fetch(API_URL + "/product/" + targetValue)
         .then((res) => res.json())
         .then((res) => {
           setProduct(res);
-          console.log("setProduct");
+          console.log("handleProductChange", res);
         });
     } else {
       setProduct(null);
@@ -250,24 +354,38 @@ function FormWeighing() {
       <div className="flex justify-between items-center">
         <div>SAP Order No.</div>
         <input
+          ref={sapNoRef}
+          onChange={() => {
+            const no = sapNoRef.current.value;
+            setSapNo(no);
+          }}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
           type="text"
+          disabled={isWeighingProcess}
         />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Batch No.</div>
         <input
+          ref={batchNoRef}
+          onChange={() => {
+            const no = batchNoRef.current.value;
+            setBatchNo(no);
+          }}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
           type="text"
+          disabled={isWeighingProcess}
         />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Product No.</div>
         <select
+          ref={productNoRef}
           onChange={handleProductChange}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          disabled={isWeighingProcess}
         >
           <option value=""></option>
           {products.length !== 0 &&
