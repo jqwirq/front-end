@@ -16,7 +16,10 @@ export default function Page() {
   const [isWeighingProcess, setIsWeighingProcess] = useState(false);
   const [isMaterialProcess, setIsMaterialProcess] = useState(false);
 
-  const materialRef = useRef();
+  const sapNoRef = useRef();
+  const batchNoRef = useRef();
+  const productNoRef = useRef();
+  const materialNoRef = useRef();
 
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
@@ -73,7 +76,7 @@ export default function Page() {
     setProduct,
     isWeighingProcess,
     setIsWeighingProcess,
-    materialRef,
+    materialNoRef,
   };
 
   return (
@@ -170,7 +173,7 @@ function StartButton() {
 
       <button
         onClick={() => {
-          setIsWeighingProcess((state) => !state);
+          setIsWeighingProcess(true);
         }}
         disabled={isWeighingProcess}
         className={`basis-1/2 text-white py-4 ${
@@ -181,6 +184,15 @@ function StartButton() {
       >
         Start product
       </button>
+      {isWeighingProcess && (
+        <button
+          onClick={() => {
+            setIsWeighingProcess(false);
+          }}
+        >
+          test
+        </button>
+      )}
     </div>
   );
 }
@@ -214,38 +226,48 @@ function ScaleSelectButton({ handleSelectSSE }) {
 }
 
 function FormWeighing() {
-  const { products, product, setProduct, materialRef } = useWeighingContext();
+  const { products, product, setProduct, materialNoRef } = useWeighingContext();
 
   const handleProductChange = (e) => {
-    materialRef.current.value = "";
+    materialNoRef.current.value = "";
 
     const targetValue = e.target.value;
     console.log(targetValue);
-    fetch(API_URL + "/product/" + targetValue)
-      .then((res) => res.json())
-      .then((res) => {
-        setProduct(res);
-        console.log("setProduct");
-      });
+    if (targetValue) {
+      fetch(API_URL + "/product/" + targetValue)
+        .then((res) => res.json())
+        .then((res) => {
+          setProduct(res);
+          console.log("setProduct");
+        });
+    } else {
+      setProduct(null);
+    }
   };
 
   return (
     <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-xl justify-center">
       <div className="flex justify-between items-center">
         <div>SAP Order No.</div>
-        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
+        <input
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          type="text"
+        />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Batch No.</div>
-        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
+        <input
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          type="text"
+        />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Product No.</div>
         <select
           onChange={handleProductChange}
-          className="w-[55%] bg-yellow-200 p-1 pl-4"
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
         >
           <option value=""></option>
           {products.length !== 0 &&
@@ -260,9 +282,9 @@ function FormWeighing() {
       <div className="flex justify-between items-center">
         <div>Material No.</div>
         <select
-          className="w-[55%] bg-yellow-200 p-1 pl-4"
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
           disabled={product === null}
-          ref={materialRef}
+          ref={materialNoRef}
         >
           <option value=""></option>
           {product !== null &&
@@ -276,24 +298,25 @@ function FormWeighing() {
 
       <div className="flex justify-between items-center">
         <div>Packaging</div>
-        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
+        <select className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl">
           <option value=""></option>
         </select>
       </div>
 
       <div className="flex justify-between items-center">
-        <div>Batch No.</div>
-        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
-      </div>
-
-      <div className="flex justify-between items-center">
         <div>Target Qty. (Kg.)</div>
-        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
+        <input
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          type="text"
+        />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Tolerance (%)</div>
-        <input className="w-[55%] bg-yellow-200 p-1 pl-4" type="text" />
+        <input
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          type="text"
+        />
       </div>
     </div>
   );
