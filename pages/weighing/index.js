@@ -10,9 +10,14 @@ function useWeighingContext() {
 }
 
 export default function Page() {
+  const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState(null);
+
+  const [isWeighingProcess, setIsWeighingProcess] = useState(false);
+  const [isMaterialProcess, setIsMaterialProcess] = useState(false);
+
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
-  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     fetch(API_URL + "/products")
@@ -25,6 +30,10 @@ export default function Page() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  useEffect(() => {
+    console.log("setProduct, useEffect[product]", product);
+  }, [product]);
 
   // SSE
   const handleSelectSSE = () => {
@@ -56,8 +65,16 @@ export default function Page() {
     };
   }, [eventSource]);
 
+  const value = {
+    products,
+    product,
+    setProduct,
+    isWeighingProcess,
+    setIsWeighingProcess,
+  };
+
   return (
-    <WeighingProcessContext.Provider value={{ products }}>
+    <WeighingProcessContext.Provider value={value}>
       <div className="bg-slate-100 min-h-screen">
         <div className="min-h-screen max-h-screen flex flex-col">
           <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
@@ -133,13 +150,32 @@ function Timers() {
 }
 
 function StartButton() {
+  const { isWeighingProcess, setIsWeighingProcess } = useWeighingContext();
+
   return (
     <div className="px-2 pb-8 col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-xl">
-      <button className="bg-green-600 hover:bg-green-500 basis-1/2 text-white py-4">
+      <button
+        disabled={!isWeighingProcess}
+        className={`basis-1/2 text-white py-4 ${
+          !isWeighingProcess
+            ? "bg-green-700"
+            : "bg-green-600 hover:bg-green-500 "
+        }`}
+      >
         Start material
       </button>
 
-      <button className="bg-green-600 hover:bg-green-500 basis-1/2 text-white py-4">
+      <button
+        onClick={() => {
+          setIsWeighingProcess((state) => !state);
+        }}
+        disabled={isWeighingProcess}
+        className={`basis-1/2 text-white py-4 ${
+          isWeighingProcess
+            ? "bg-green-700"
+            : "bg-green-600 hover:bg-green-500 "
+        }`}
+      >
         Start product
       </button>
     </div>
@@ -175,8 +211,18 @@ function ScaleSelectButton({ handleSelectSSE }) {
 }
 
 function FormWeighing() {
-  const { products } = useWeighingContext();
-  console.log(products);
+  const { products, product, setProduct } = useWeighingContext();
+
+  const handleProductChange = (e) => {
+    const targetValue = e.target.value;
+    console.log(targetValue);
+    fetch(API_URL + "/product/" + targetValue)
+      .then((res) => res.json())
+      .then((res) => {
+        setProduct(res);
+        console.log("setProduct");
+      });
+  };
 
   return (
     <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-xl justify-center">
@@ -192,7 +238,10 @@ function FormWeighing() {
 
       <div className="flex justify-between items-center">
         <div>Product No.</div>
-        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
+        <select
+          onChange={handleProductChange}
+          className="w-[55%] bg-yellow-200 p-1 pl-4"
+        >
           <option value=""></option>
           {products.length !== 0 &&
             products.map((v) => (
@@ -205,8 +254,17 @@ function FormWeighing() {
 
       <div className="flex justify-between items-center">
         <div>Material No.</div>
-        <select className="w-[55%] bg-yellow-200 p-1 pl-4">
-          <option value="test">Test</option>
+        <select
+          className="w-[55%] bg-yellow-200 p-1 pl-4"
+          disabled={product === null}
+        >
+          <option value=""></option>
+          {product !== null &&
+            product.materials.map((v) => (
+              <option key={v._id} value={v.no}>
+                {v.no}
+              </option>
+            ))}
         </select>
       </div>
 
