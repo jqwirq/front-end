@@ -531,18 +531,45 @@ function FormWeighing() {
     isWeighingProcess,
   } = useWeighingContext();
 
+  const timeoutRef = useRef(null);
   const handleProductChange = (e) => {
-    materialNoRef.current.value = "";
+    clearTimeout(timeoutRef.current);
     const targetValue = e.target.value;
-
     setProductNo(targetValue);
+
     if (targetValue) {
-      fetch(API_URL + "/product/" + targetValue)
-        .then((res) => res.json())
-        .then((res) => {
-          setProduct(res);
-          console.log("handleProductChange", res);
-        });
+      timeoutRef.current = setTimeout(() => {
+        fetch(API_URL + "/product/" + targetValue)
+          .then((res) => {
+            if (!res.ok) {
+              // if HTTP status is not 200-299
+              if (res.status === 400) {
+                console.error("Bad request");
+                // Handle 400 error
+              } else if (res.status === 404) {
+                console.error("No product found with this ID");
+                // Handle 404 error
+              } else {
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+            } else {
+              return res.json();
+            }
+          })
+          .then((res) => {
+            if (res) {
+              // if res is not undefined
+              setProduct(res);
+              console.log("handleProductChange", res);
+              materialNoRef.current.value = "";
+            }
+          })
+          .catch((e) =>
+            console.error(
+              "There was a problem with the fetch operation: " + e.message
+            )
+          );
+      }, 1000);
     } else {
       setProduct(null);
     }
@@ -580,20 +607,21 @@ function FormWeighing() {
 
       <div className="flex justify-between items-center">
         <div>Product No.</div>
-        <select
+        <input
           ref={productNoRef}
           onChange={handleProductChange}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
           disabled={isWeighingProcess}
-        >
-          <option value=""></option>
+          list="productsNo"
+        />
+        <datalist id="productsNo">
           {products.length !== 0 &&
             products.map((v) => (
               <option key={v._id} value={v.no}>
                 {v.no}
               </option>
             ))}
-        </select>
+        </datalist>
       </div>
 
       <div className="flex justify-between items-center">
