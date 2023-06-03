@@ -12,10 +12,17 @@ function useWeighingContext() {
 export default function Page() {
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState(null);
+  const [sap, setSAP] = useState(null);
 
   const [sapNo, setSapNo] = useState("");
   const [batchNo, setBatchNo] = useState("");
   const [productNo, setProductNo] = useState("");
+  const [materialNo, setMaterialNo] = useState("");
+  const [packaging, setPackaging] = useState("");
+  const [targetQty, setTargetQty] = useState(0);
+  const [tolerance, setTolerance] = useState(0);
+  const [actualQuantity, setActualQuantity] = useState(0);
+  const [isConnectedToScaleValue, setIsConnectedToScaleValue] = useState(false);
 
   const [isWeighingProcess, setIsWeighingProcess] = useState(false);
   const [productTime, setProductTime] = useState(0);
@@ -25,17 +32,76 @@ export default function Page() {
   const sapNoRef = useRef("");
   const batchNoRef = useRef("");
   const productNoRef = useRef("");
-  const materialNoRef = useRef();
+  const materialNoRef = useRef("");
+  const packagingRef = useRef("");
+  const targetQtyRef = useRef(0);
+  const toleranceRef = useRef(0);
 
   const [data, setData] = useState("");
   const [eventSource, setEventSource] = useState(null);
 
   const isMainInputEmpty = () => {
-    const isEmpty = sapNo === "" || batchNo === "" || productNo === "";
+    return sapNo === "" || batchNo === "" || productNo === "";
+  };
 
-    if (isEmpty) return true;
+  const isMaterialInputEmpty = () => {
+    return (
+      materialNo === "" ||
+      packaging === "" ||
+      targetQty === 0 ||
+      targetQty === ""
+    );
+  };
 
-    return false;
+  const handleStartWeighingProcess = async () => {
+    try {
+      const response = await fetch(API_URL + "/weighing-process/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          no: sapNo,
+          batchNo,
+          productNo,
+        }),
+      });
+      const responseJson = await response.json();
+      setSAP(responseJson.SAP);
+      console.log(responseJson);
+
+      setIsWeighingProcess(true);
+    } catch (err) {
+      (err) => console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    console.log(sap);
+  }, [sap]);
+
+  const handleStopWeighingProcess = async () => {
+    try {
+      const response = await fetch(API_URL + "/weighing-process/stop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: sap._id,
+        }),
+      });
+      const responseJson = await response.json();
+      console.log(responseJson);
+
+      setSAP(null);
+      setProduct(null);
+      resetMain();
+      setIsWeighingProcess(false);
+      setProductTime(0);
+    } catch (err) {
+      (err) => console.error(err);
+    }
   };
 
   const resetMain = () => {
@@ -46,8 +112,24 @@ export default function Page() {
     productNoRef.current.value = "";
     setProductNo("");
     materialNoRef.current.value = "";
-    setProduct(null);
-    setProductTime(0);
+    setMaterialNo("");
+    packagingRef.current.value = "";
+    setPackaging("");
+    targetQtyRef.current.value = "";
+    setTargetQty(0);
+    toleranceRef.current.value = "";
+    setTolerance(0);
+  };
+
+  const resetMaterial = () => {
+    materialNoRef.current.value = "";
+    setMaterialNo("");
+    packagingRef.current.value = "";
+    setPackaging("");
+    targetQtyRef.current.value = "";
+    setTargetQty(0);
+    toleranceRef.current.value = "";
+    setTolerance(0);
   };
 
   useEffect(() => {
@@ -62,24 +144,6 @@ export default function Page() {
       .catch((err) => console.error(err));
   }, []);
 
-  // SSE
-  const handleSelectSSE = () => {
-    if (!eventSource) {
-      const es = new EventSource(API_URL + "/events");
-      setEventSource(es);
-
-      es.onmessage = (event) => {
-        setData(event.data);
-      };
-
-      es.onerror = (err) => {
-        console.error("EventSource failed:", err);
-        es.close();
-        setEventSource(null);
-      };
-    }
-  };
-
   useEffect(() => {
     let interval;
     if (isWeighingProcess) {
@@ -91,6 +155,10 @@ export default function Page() {
     }
     return () => clearInterval(interval);
   }, [isWeighingProcess]);
+
+  // useEffect(() => {
+  //   console.log(productTime);
+  // }, [productTime]);
 
   useEffect(() => {
     let interval;
@@ -104,13 +172,63 @@ export default function Page() {
     return () => clearInterval(interval);
   }, [isMaterialProcess]);
 
-  useEffect(() => {
-    return () => {
-      if (eventSource) {
-        eventSource.close();
-      }
-    };
-  }, [eventSource]);
+  const handleSelectSSE = () => {
+    fetch(API_URL + "/weighing/start-tcp/3005")
+      .then((res) => res.json())
+      .then((res) => console.log(res))
+      .catch((err) => console.error(err));
+    // if (!eventSource) {
+    //   const es = new EventSource(API_URL + "/weighing");
+    //   setEventSource(es);
+    //   es.onmessage = (event) => {
+    //     setData(event.data);
+    //   };
+    //   es.onerror = (err) => {
+    //     console.error("EventSource failed:", err);
+    //     es.close();
+    //     setEventSource(null);
+    //   };
+    // }
+  };
+
+  const handleCloseTCP = () => {
+    fetch(API_URL + "/weighing/stop-tcp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        port: 3005,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => console.log(res))
+      .catch((err) => console.error(err));
+  };
+
+  // const handleBeforeUnload = (event) => {
+  //   event.preventDefault();
+  //   handleCloseTCP();
+  // };
+
+  // useEffect(() => {
+  //   // Add beforeunload event listener when component is mounted
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+
+  //   return () => {
+  //     // Remove beforeunload event listener when component is unmounted
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //     handleCloseTCP();
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   return () => {
+  //     if (eventSource) {
+  //       eventSource.close();
+  //     }
+  //   };
+  // }, [eventSource]);
 
   // useEffect(() => {
   //   console.log("setProduct, useEffect[product]", product);
@@ -138,18 +256,39 @@ export default function Page() {
     batchNoRef,
     productNoRef,
     materialNoRef,
+    packagingRef,
+    targetQtyRef,
+    toleranceRef,
     isMainInputEmpty,
     productTime,
     setProductTime,
     materialTime,
     setMaterialTime,
     resetMain,
+    resetMaterial,
     sapNo,
     setSapNo,
     batchNo,
     setBatchNo,
     productNo,
     setProductNo,
+    materialNo,
+    setMaterialNo,
+    packaging,
+    setPackaging,
+    targetQty,
+    setTargetQty,
+    tolerance,
+    setTolerance,
+    actualQuantity,
+    setActualQuantity,
+    isMaterialInputEmpty,
+    handleSelectSSE,
+    handleCloseTCP,
+    handleStartWeighingProcess,
+    handleStopWeighingProcess,
+    isConnectedToScaleValue,
+    setIsConnectedToScaleValue,
   };
 
   return (
@@ -179,7 +318,7 @@ export default function Page() {
           >
             <FormWeighing />
 
-            <ScaleSelectButton handleSelectSSE={handleSelectSSE} />
+            <ScaleSelectButton />
 
             <Timers />
 
@@ -194,15 +333,30 @@ export default function Page() {
 }
 
 function Weight({ eventSource, data }) {
+  const { actualQuantity, isConnectedToScaleValue, tolerance } =
+    useWeighingContext();
+
   return (
     <div className="col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-start items-center px-2 pt-6 gap-4">
       <div className="text-8xl bg-yellow-200 font-bold w-full p-4 text-center">
-        {data ? data : "2000.00 Kg"}
+        {actualQuantity.toFixed(2)} Kg
       </div>
 
       <div className="flex justify-center text-3xl text-center gap-4 w-full">
-        <div className="bg-red-400 basis-1/2 py-2 px-4">- 1980.00 Kg</div>
-        <div className="bg-red-400 basis-1/2 py-2 px-4">+ 2020.00 Kg</div>
+        <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
+          {isConnectedToScaleValue
+            ? "- " +
+              (actualQuantity - actualQuantity * (tolerance / 100)).toFixed(2) +
+              " Kg"
+            : "..."}
+        </div>
+        <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
+          {isConnectedToScaleValue
+            ? "+ " +
+              (actualQuantity + actualQuantity * (tolerance / 100)).toFixed(2) +
+              " Kg"
+            : "..."}
+        </div>
       </div>
     </div>
   );
@@ -245,36 +399,70 @@ function StartButton() {
     isWeighingProcess,
     setIsWeighingProcess,
     isMainInputEmpty,
+    isMaterialInputEmpty,
+    isMaterialProcess,
+    setIsMaterialProcess,
     resetMain,
+    resetMaterial,
+    setProductTime,
+    setMaterialTime,
+    setProduct,
+    handleStartWeighingProcess,
+    handleStopWeighingProcess,
   } = useWeighingContext();
 
   return (
     <div className="px-2 pb-8 col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-xl">
-      <button
-        disabled={!isWeighingProcess}
-        className={`basis-1/2 text-white py-4 ${
-          !isWeighingProcess
-            ? "bg-green-700"
-            : "bg-green-600 hover:bg-green-500 "
-        }`}
-      >
-        Start material
-      </button>
-
-      {isWeighingProcess ? (
+      {isMaterialProcess ? (
         <button
           onClick={() => {
-            resetMain();
-            setIsWeighingProcess(false);
+            resetMaterial();
+            setIsMaterialProcess(false);
+            setMaterialTime(0);
           }}
+          className={`basis-1/2 text-white py-4 ${
+            false ? "bg-red-700" : "bg-red-600 hover:bg-red-500 "
+          }`}
+          // disabled if weight is still out of tolerance
+          disabled={false}
         >
           Stop
         </button>
       ) : (
         <button
           onClick={() => {
-            setIsWeighingProcess(true);
+            setIsMaterialProcess(true);
           }}
+          disabled={
+            isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
+          }
+          className={`basis-1/2 text-white py-4 ${
+            isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
+              ? "bg-green-700"
+              : "bg-green-600 hover:bg-green-500 "
+          }`}
+        >
+          Start material
+        </button>
+      )}
+
+      {isWeighingProcess ? (
+        <button
+          onClick={() => {
+            handleStopWeighingProcess();
+          }}
+          className={`basis-1/2 text-white py-4 ${
+            isMaterialProcess || isMainInputEmpty()
+              ? "bg-red-700"
+              : "bg-red-600 hover:bg-red-500 "
+          }`}
+          disabled={isMaterialProcess}
+        >
+          Stop
+        </button>
+      ) : (
+        <button
+          onClick={handleStartWeighingProcess}
           disabled={isWeighingProcess || isMainInputEmpty()}
           className={`basis-1/2 text-white py-4 ${
             isWeighingProcess || isMainInputEmpty()
@@ -289,7 +477,8 @@ function StartButton() {
   );
 }
 
-function ScaleSelectButton({ handleSelectSSE }) {
+function ScaleSelectButton() {
+  const { handleSelectSSE, handleCloseTCP } = useWeighingContext();
   return (
     <div className="col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl">
       <div className="flex w-full gap-4 justify-center items-center">
@@ -300,7 +489,10 @@ function ScaleSelectButton({ handleSelectSSE }) {
           2 ton
         </button>
 
-        <button className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2">
+        <button
+          onClick={handleCloseTCP}
+          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
+        >
           350 Kg
         </button>
       </div>
@@ -326,9 +518,16 @@ function FormWeighing() {
     batchNoRef,
     productNoRef,
     materialNoRef,
+    packagingRef,
+    targetQtyRef,
+    toleranceRef,
     setSapNo,
     setBatchNo,
     setProductNo,
+    setMaterialNo,
+    setPackaging,
+    setTargetQty,
+    setTolerance,
     isWeighingProcess,
   } = useWeighingContext();
 
@@ -402,6 +601,10 @@ function FormWeighing() {
         <select
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
           disabled={product === null}
+          onChange={() => {
+            const no = materialNoRef.current.value;
+            setMaterialNo(no);
+          }}
           ref={materialNoRef}
         >
           <option value=""></option>
@@ -416,24 +619,42 @@ function FormWeighing() {
 
       <div className="flex justify-between items-center">
         <div>Packaging</div>
-        <select className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl">
+        <select
+          ref={packagingRef}
+          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          onChange={(e) => {
+            const value = e.target.value;
+            setPackaging(value);
+          }}
+        >
           <option value=""></option>
+          <option value="test1">test1</option>
         </select>
       </div>
 
       <div className="flex justify-between items-center">
         <div>Target Qty. (Kg.)</div>
         <input
+          ref={targetQtyRef}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="text"
+          type="number"
+          onChange={(e) => {
+            const value = e.target.valueAsNumber;
+            setTargetQty(value);
+          }}
         />
       </div>
 
       <div className="flex justify-between items-center">
         <div>Tolerance (%)</div>
         <input
+          ref={toleranceRef}
           className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="text"
+          type="number"
+          onChange={(e) => {
+            const value = e.target.valueAsNumber;
+            setTolerance(value);
+          }}
         />
       </div>
     </div>
