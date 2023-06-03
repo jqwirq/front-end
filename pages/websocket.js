@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from "react";
 
 export default function WebSocketExample() {
   const [messages, setMessages] = useState([]);
@@ -16,7 +16,7 @@ export default function WebSocketExample() {
   }, []);
 
   function connect() {
-    ws.current = new WebSocket('ws://127.0.0.1:1880/ws1');
+    ws.current = new WebSocket("ws://127.0.0.1:1880/ws1");
 
     ws.current.onopen = () => {
       console.log("Connected to WebSocket server");
@@ -34,7 +34,7 @@ export default function WebSocketExample() {
       console.log("Disconnected from WebSocket server");
       if (shouldAttemptReconnect.current) {
         console.log("Attempting to reconnect...");
-        setTimeout(connect, 3000);  // Attempt to reconnect every 3 seconds
+        setTimeout(connect, 3000); // Attempt to reconnect every 3 seconds
       }
     };
   }
