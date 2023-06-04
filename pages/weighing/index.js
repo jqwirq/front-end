@@ -10,9 +10,10 @@ function useWeighingContext() {
 }
 
 export default function Page() {
-  const [products, setProducts] = useState([]);
-  const [product, setProduct] = useState(null);
   const [sap, setSAP] = useState(null);
+  const [product, setProduct] = useState(null);
+  const [material, setMaterial] = useState(null);
+  const [products, setProducts] = useState([]);
 
   const [sapNo, setSapNo] = useState("");
   const [batchNo, setBatchNo] = useState("");
@@ -21,8 +22,8 @@ export default function Page() {
   const [packaging, setPackaging] = useState("");
   const [targetQty, setTargetQty] = useState(0);
   const [tolerance, setTolerance] = useState(0);
-  const [actualQuantity, setActualQuantity] = useState(0);
-  const [isConnectedToScaleValue, setIsConnectedToScaleValue] = useState(false);
+  const [actualQuantity, setActualQuantity] = useState(100);
+  const [isConnectedToScaleValue, setIsConnectedToScaleValue] = useState(true);
 
   const [isWeighingProcess, setIsWeighingProcess] = useState(false);
   const [productTime, setProductTime] = useState(0);
@@ -67,18 +68,34 @@ export default function Page() {
         }),
       });
       const responseJson = await response.json();
-      setSAP(responseJson.SAP);
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 404) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 409) {
+          console.error(responseJson.message);
+          return;
+        } else {
+          return;
+        }
+      }
+
       console.log(responseJson);
 
+      setSAP(responseJson.SAP);
       setIsWeighingProcess(true);
     } catch (err) {
       (err) => console.error(err);
     }
   };
 
-  useEffect(() => {
-    console.log(sap);
-  }, [sap]);
+  // useEffect(() => {
+  //   console.log(sap);
+  // }, [sap]);
 
   const handleStopWeighingProcess = async () => {
     try {
@@ -92,7 +109,21 @@ export default function Page() {
         }),
       });
       const responseJson = await response.json();
-      console.log(responseJson);
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 404) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 409) {
+          console.error(responseJson.message);
+          return;
+        } else {
+          return;
+        }
+      }
 
       setSAP(null);
       setProduct(null);
@@ -101,6 +132,81 @@ export default function Page() {
       setProductTime(0);
     } catch (err) {
       (err) => console.error(err);
+    }
+  };
+
+  const handleStartMaterialWeighing = async () => {
+    try {
+      const response = await fetch(API_URL + "/material-weighing/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: sap._id,
+          materialNo,
+          packaging,
+          quantity: actualQuantity,
+        }),
+      });
+      const responseJson = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 404) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 409) {
+          console.error(responseJson.message);
+          return;
+        } else {
+          return;
+        }
+      }
+
+      setMaterial(responseJson.material);
+      setIsMaterialProcess(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleStopMaterialWeighing = async () => {
+    try {
+      const response = await fetch(API_URL + "/material-weighing/stop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: sap._id,
+          materialId: material._id,
+        }),
+      });
+      const responseJson = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 404) {
+          console.error(responseJson.message);
+          return;
+        } else if (response.status === 409) {
+          console.error(responseJson.message);
+          return;
+        } else {
+          return;
+        }
+      }
+
+      resetMaterial();
+      setIsMaterialProcess(false);
+      setMaterialTime(0);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -287,6 +393,8 @@ export default function Page() {
     handleCloseTCP,
     handleStartWeighingProcess,
     handleStopWeighingProcess,
+    handleStartMaterialWeighing,
+    handleStopMaterialWeighing,
     isConnectedToScaleValue,
     setIsConnectedToScaleValue,
   };
@@ -409,30 +517,26 @@ function StartButton() {
     setProduct,
     handleStartWeighingProcess,
     handleStopWeighingProcess,
+    handleStartMaterialWeighing,
+    handleStopMaterialWeighing,
   } = useWeighingContext();
 
   return (
     <div className="px-2 pb-8 col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-xl">
       {isMaterialProcess ? (
         <button
-          onClick={() => {
-            resetMaterial();
-            setIsMaterialProcess(false);
-            setMaterialTime(0);
-          }}
+          onClick={handleStopMaterialWeighing}
           className={`basis-1/2 text-white py-4 ${
             false ? "bg-red-700" : "bg-red-600 hover:bg-red-500 "
           }`}
           // disabled if weight is still out of tolerance
           disabled={false}
         >
-          Stop
+          Stop material
         </button>
       ) : (
         <button
-          onClick={() => {
-            setIsMaterialProcess(true);
-          }}
+          onClick={handleStartMaterialWeighing}
           disabled={
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
           }
@@ -448,9 +552,7 @@ function StartButton() {
 
       {isWeighingProcess ? (
         <button
-          onClick={() => {
-            handleStopWeighingProcess();
-          }}
+          onClick={handleStopWeighingProcess}
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || isMainInputEmpty()
               ? "bg-red-700"
@@ -458,7 +560,7 @@ function StartButton() {
           }`}
           disabled={isMaterialProcess}
         >
-          Stop
+          Stop product
         </button>
       ) : (
         <button
@@ -656,7 +758,11 @@ function FormWeighing() {
           }}
         >
           <option value=""></option>
-          <option value="test1">test1</option>
+          <option value="Sak">Sak</option>
+          <option value="Pail">Pail</option>
+          <option value="Drum">Drum</option>
+          <option value="IBC">IBC</option>
+          <option value="Botol 250mL-1000mL">Botol 250mL-1000mL</option>
         </select>
       </div>
 
