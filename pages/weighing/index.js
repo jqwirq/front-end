@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { useState, useEffect, createContext, useContext, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useRef,
+  forwardRef,
+} from "react";
+import { useReactToPrint } from "react-to-print";
+import styles from "@/styles/sap.module.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -8,6 +17,8 @@ const WeighingProcessContext = createContext();
 function useWeighingContext() {
   return useContext(WeighingProcessContext);
 }
+
+const PrintSAP = forwardRef(ComponentSAPToPrint);
 
 export default function Page() {
   const [sap, setSAP] = useState(null);
@@ -22,8 +33,8 @@ export default function Page() {
   const [packaging, setPackaging] = useState("");
   const [targetQty, setTargetQty] = useState(0);
   const [tolerance, setTolerance] = useState(0);
-  const [actualQuantity, setActualQuantity] = useState(100);
-  const [isConnectedToScaleValue, setIsConnectedToScaleValue] = useState(true);
+  const [actualQuantity, setActualQuantity] = useState(0);
+  const [isConnectedToScaleValue, setIsConnectedToScaleValue] = useState(false);
 
   const [isWeighingProcess, setIsWeighingProcess] = useState(false);
   const [productTime, setProductTime] = useState(0);
@@ -37,9 +48,58 @@ export default function Page() {
   const packagingRef = useRef("");
   const targetQtyRef = useRef(0);
   const toleranceRef = useRef(0);
+  const ws = useRef(null);
 
-  const [data, setData] = useState("");
-  const [eventSource, setEventSource] = useState(null);
+  // SSE useless
+  // const [data, setData] = useState("");
+  // const [eventSource, setEventSource] = useState(null);
+
+  const componentMaterialToPrintRef = useRef();
+  const handlePrintMaterial = useReactToPrint({
+    content: () => componentMaterialToPrintRef.current,
+  });
+
+  function disconnectWebsocket() {
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
+      console.log("Disconnected from WebSocket server");
+    }
+  }
+
+  function connectWebSocket(url) {
+    disconnectWebsocket(); // Disconnect any existing WebSocket connection
+    ws.current = new WebSocket(url);
+
+    ws.current.onopen = () => {
+      console.log(`Connected to WebSocket server at ${url}`);
+    };
+
+    ws.current.onmessage = (message) => {
+      setActualQuantity(parseFloat(message.data));
+      console.log(message.data);
+      setIsConnectedToScaleValue(true);
+      if (!isQuantityToleranced) {
+        fetch("http://127.0.0.1:1880" + "/api/error-signal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sinyal: "merah",
+          }),
+        });
+      }
+    };
+
+    ws.current.onerror = (error) => {
+      console.log(error);
+    };
+
+    ws.current.onclose = (event) => {
+      console.log(`Disconnected from WebSocket server at ${url}`);
+    };
+  }
 
   const isMainInputEmpty = () => {
     return sapNo === "" || batchNo === "" || productNo === "";
@@ -52,6 +112,18 @@ export default function Page() {
       targetQty === 0 ||
       targetQty === ""
     );
+  };
+
+  const isQuantityToleranced = () => {
+    if (tolerance === 0 || targetQty === 0 || actualQuantity === 0) {
+      return false;
+    }
+
+    const toleranceValue = (tolerance / 100) * targetQty;
+    const lowerLimit = targetQty - toleranceValue;
+    const upperLimit = targetQty + toleranceValue;
+
+    return actualQuantity >= lowerLimit && actualQuantity <= upperLimit;
   };
 
   const handleStartWeighingProcess = async () => {
@@ -125,7 +197,7 @@ export default function Page() {
         }
       }
 
-      setSAP(null);
+      setSAP(responseJson.SAP);
       setProduct(null);
       resetMain();
       setIsWeighingProcess(false);
@@ -146,7 +218,6 @@ export default function Page() {
           id: sap._id,
           materialNo,
           packaging,
-          quantity: actualQuantity,
         }),
       });
       const responseJson = await response.json();
@@ -175,6 +246,11 @@ export default function Page() {
 
   const handleStopMaterialWeighing = async () => {
     try {
+      if (!isQuantityToleranced()) {
+        console.error("Weigh out of tolerance");
+        return;
+      }
+
       const response = await fetch(API_URL + "/material-weighing/stop", {
         method: "POST",
         headers: {
@@ -183,6 +259,7 @@ export default function Page() {
         body: JSON.stringify({
           id: sap._id,
           materialId: material._id,
+          quantity: actualQuantity,
         }),
       });
       const responseJson = await response.json();
@@ -202,9 +279,12 @@ export default function Page() {
         }
       }
 
+      console.log(responseJson);
+      setMaterial(responseJson.material);
       resetMaterial();
       setIsMaterialProcess(false);
       setMaterialTime(0);
+      setActualQuantity(0);
     } catch (error) {
       console.error(error);
     }
@@ -248,6 +328,10 @@ export default function Page() {
         setProducts(res);
       })
       .catch((err) => console.error(err));
+
+    return () => {
+      disconnectWebsocket();
+    };
   }, []);
 
   useEffect(() => {
@@ -278,63 +362,11 @@ export default function Page() {
     return () => clearInterval(interval);
   }, [isMaterialProcess]);
 
-  const handleSelectSSE = () => {
-    fetch(API_URL + "/weighing/start-tcp/3005")
-      .then((res) => res.json())
-      .then((res) => console.log(res))
-      .catch((err) => console.error(err));
-    // if (!eventSource) {
-    //   const es = new EventSource(API_URL + "/weighing");
-    //   setEventSource(es);
-    //   es.onmessage = (event) => {
-    //     setData(event.data);
-    //   };
-    //   es.onerror = (err) => {
-    //     console.error("EventSource failed:", err);
-    //     es.close();
-    //     setEventSource(null);
-    //   };
-    // }
-  };
-
-  const handleCloseTCP = () => {
-    fetch(API_URL + "/weighing/stop-tcp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        port: 3005,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => console.log(res))
-      .catch((err) => console.error(err));
-  };
-
-  // const handleBeforeUnload = (event) => {
-  //   event.preventDefault();
-  //   handleCloseTCP();
-  // };
-
   // useEffect(() => {
-  //   // Add beforeunload event listener when component is mounted
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
-
-  //   return () => {
-  //     // Remove beforeunload event listener when component is unmounted
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //     handleCloseTCP();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   return () => {
-  //     if (eventSource) {
-  //       eventSource.close();
-  //     }
-  //   };
-  // }, [eventSource]);
+  //   if (actualQuantity !== 0) {
+  //     isQuantityToleranced();
+  //   }
+  // }, [actualQuantity, tolerance]);
 
   // useEffect(() => {
   //   console.log("setProduct, useEffect[product]", product);
@@ -389,14 +421,14 @@ export default function Page() {
     actualQuantity,
     setActualQuantity,
     isMaterialInputEmpty,
-    handleSelectSSE,
-    handleCloseTCP,
     handleStartWeighingProcess,
     handleStopWeighingProcess,
     handleStartMaterialWeighing,
     handleStopMaterialWeighing,
     isConnectedToScaleValue,
     setIsConnectedToScaleValue,
+    connectWebSocket,
+    isQuantityToleranced,
   };
 
   return (
@@ -419,7 +451,7 @@ export default function Page() {
           <div
             className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
             style={{
-              gridTemplateRows: "1fr 1fr .4fr .6fr 1fr 1fr",
+              gridTemplateRows: "1fr 1fr .8fr .4fr 1fr 1fr",
               gridTemplateColumns:
                 "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
             }}
@@ -432,7 +464,29 @@ export default function Page() {
 
             <StartButton />
 
-            <Weight eventSource={eventSource} data={data} />
+            <div className="col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-4 text-base px-4">
+              <button
+                className="basis-1/2 bg-slate-400"
+                onClick={() => {
+                  console.log(material);
+                }}
+              >
+                print
+                <br />
+                material
+              </button>
+              <button
+                className="basis-1/2 bg-slate-400"
+                onClick={() => {
+                  console.log(sap);
+                }}
+              >
+                print
+                <br /> sap
+              </button>
+            </div>
+
+            <Weight />
           </div>
         </div>
       </div>
@@ -440,8 +494,8 @@ export default function Page() {
   );
 }
 
-function Weight({ eventSource, data }) {
-  const { actualQuantity, isConnectedToScaleValue, tolerance } =
+function Weight() {
+  const { actualQuantity, isConnectedToScaleValue, targetQty, tolerance } =
     useWeighingContext();
 
   return (
@@ -452,18 +506,24 @@ function Weight({ eventSource, data }) {
 
       <div className="flex justify-center text-3xl text-center gap-4 w-full">
         <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
-          {isConnectedToScaleValue
+          {/* {isConnectedToScaleValue
             ? "- " +
-              (actualQuantity - actualQuantity * (tolerance / 100)).toFixed(2) +
+              (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
               " Kg"
-            : "..."}
+            : "..."} */}
+          {"- " +
+            (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
+            " Kg"}
         </div>
         <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
-          {isConnectedToScaleValue
+          {/* {isConnectedToScaleValue
             ? "+ " +
-              (actualQuantity + actualQuantity * (tolerance / 100)).toFixed(2) +
+              (targetQty + targetQty * (tolerance / 100)).toFixed(2) +
               " Kg"
-            : "..."}
+            : "..."} */}
+          {"+ " +
+            (targetQty + targetQty * (tolerance / 100)).toFixed(2) +
+            " Kg"}
         </div>
       </div>
     </div>
@@ -522,7 +582,7 @@ function StartButton() {
   } = useWeighingContext();
 
   return (
-    <div className="px-2 pb-8 col-start-7 col-end-13 row-start-3 row-end-5 flex justify-center items-center gap-4 text-xl">
+    <div className="px-2 col-start-7 col-end-13 row-start-3 row-end-4 flex justify-center items-center gap-4 text-xl">
       {isMaterialProcess ? (
         <button
           onClick={handleStopMaterialWeighing}
@@ -580,30 +640,37 @@ function StartButton() {
 }
 
 function ScaleSelectButton() {
-  const { handleSelectSSE, handleCloseTCP } = useWeighingContext();
+  const { connectWebSocket, isMaterialProcess } = useWeighingContext();
   return (
     <div className="col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl">
       <div className="flex w-full gap-4 justify-center items-center">
         <button
-          onClick={handleSelectSSE}
+          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws1")}
           className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
+          disabled={!isMaterialProcess}
         >
           2 ton
         </button>
 
         <button
-          onClick={handleCloseTCP}
           className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
+          disabled={!isMaterialProcess}
         >
           350 Kg
         </button>
       </div>
       <div className="flex w-full gap-4 justify-center items-center">
-        <button className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2">
+        <button
+          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
+          disabled={!isMaterialProcess}
+        >
           2 Kg
         </button>
 
-        <button className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2">
+        <button
+          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
+          disabled={!isMaterialProcess}
+        >
           ...
         </button>
       </div>
@@ -678,7 +745,7 @@ function FormWeighing() {
   };
 
   return (
-    <div className="col-span-6 row-span-4 flex flex-col gap-4 pl-4 text-xl justify-center">
+    <div className="col-span-6 row-span-4 flex flex-col gap-4 text-xl justify-center">
       <div className="flex justify-between items-center">
         <div>SAP Order No.</div>
         <input
@@ -774,6 +841,10 @@ function FormWeighing() {
           type="number"
           onChange={(e) => {
             const value = e.target.valueAsNumber;
+            if (value === "") {
+              setTargetQty(0);
+              return;
+            }
             setTargetQty(value);
           }}
         />
@@ -791,6 +862,100 @@ function FormWeighing() {
           }}
         />
       </div>
+    </div>
+  );
+}
+
+function ComponentSAPToPrint() {
+  return (
+    <div className={styles.printArea} ref={ref}>
+      <br />
+      <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ flexBasis: "50%" }}>
+          <div className={styles.upperData}>
+            <div>SAP</div>
+            <div>:&nbsp;00000000</div>
+          </div>
+          <div className={styles.upperData}>
+            <div>Batch No</div>
+            <div>:&nbsp;00000000</div>
+          </div>
+          <div className={styles.upperData}>
+            <div>Product No</div>
+            <div>:&nbsp;00000000</div>
+          </div>
+        </div>
+        <div style={{ flexBasis: "50%" }}>
+          <div className={styles.upperData}>
+            <div>Date</div>
+            <div>:&nbsp;XXXXXXXX</div>
+          </div>
+          <div className={styles.upperData}>
+            <div>Duration</div>
+            <div>:&nbsp;00000000</div>
+          </div>
+        </div>
+      </div>
+      <br />
+      <div className={styles.tableTest}>
+        <table>
+          <thead>
+            <tr>
+              <td>M</td>
+              <td>Q</td>
+              <td>P</td>
+              <td>D</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+            </tr>
+            <tr>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+            </tr>
+            <tr>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+            </tr>
+            <tr>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+            </tr>
+            <tr>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+              <td>XXXXXXXXXX</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <br />
+      <br />
+      <div style={{ display: "flex" }}>
+        <div style={{ flexBasis: "50%" }}>
+          <div style={{ textAlign: "center" }}>Weighing by</div>
+          <br />
+          <br />
+          <br />
+          <br />
+          <br />
+          <hr />
+        </div>
+      </div>
+      <hr />
     </div>
   );
 }

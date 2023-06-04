@@ -3,15 +3,12 @@ import { useEffect, useState, useRef } from "react";
 export default function WebSocketExample() {
   const [messages, setMessages] = useState([]);
   const ws = useRef(null);
-  const shouldAttemptReconnect = useRef(true);
 
   useEffect(() => {
-    connect();
-
-    // Make sure to close the WebSocket connection when the component unmounts
+    // Do not automatically connect on component mount
+    // Connect will be triggered manually by a button
     return () => {
-      shouldAttemptReconnect.current = false;
-      ws.current && ws.current.close();
+      disconnect();
     };
   }, []);
 
@@ -32,16 +29,22 @@ export default function WebSocketExample() {
 
     ws.current.onclose = (event) => {
       console.log("Disconnected from WebSocket server");
-      if (shouldAttemptReconnect.current) {
-        console.log("Attempting to reconnect...");
-        setTimeout(connect, 3000); // Attempt to reconnect every 3 seconds
-      }
     };
+  }
+
+  function disconnect() {
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
+      console.log("Disconnected from WebSocket server");
+    }
   }
 
   return (
     <div>
       <h1>WebSocket Messages</h1>
+      <button onClick={connect}>Connect</button>
+      <button onClick={disconnect}>Disconnect</button>
       {messages.map((message, index) => (
         <p key={index}>{message}</p>
       ))}

@@ -1,0 +1,30 @@
+.tableTest table,
+.tableTest th,
+.tableTest td {
+  border: 1px black solid;
+  border-collapse: collapse;
+}
+
+.tableTest table {
+  width: 100%;
+}
+
+.tableTest th,
+.tableTest td {
+  text-align: center;
+}
+.tableTest {
+  font-size: 9px;
+}
+
+.upperData {
+  display: flex;
+  justify-content: space-between;
+}
+
+.printArea {
+  font-size: 12px;
+  width: 72mm;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
