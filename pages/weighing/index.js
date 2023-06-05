@@ -54,10 +54,44 @@ export default function Page() {
   // const [data, setData] = useState("");
   // const [eventSource, setEventSource] = useState(null);
 
-  const componentMaterialToPrintRef = useRef();
-  const handlePrintMaterial = useReactToPrint({
-    content: () => componentMaterialToPrintRef.current,
-  });
+  const componentSAPToPrintRef = useRef();
+
+  const handlePrintSAP = () => {
+    if (sap !== null && sap.isCompleted) {
+      console.log(sap);
+    } else {
+      console.error("error");
+    }
+  };
+  // const handlePrintSAP = useReactToPrint({
+  //   content: () => (sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null),
+  // });
+
+  const isMainInputEmpty = () => {
+    return sapNo === "" || batchNo === "" || productNo === "";
+  };
+
+  const isMaterialInputEmpty = () => {
+    return (
+      materialNo === "" ||
+      packaging === "" ||
+      targetQty === 0 ||
+      targetQty === ""
+    );
+  };
+
+  const isQuantityToleranced = (tolerance, targetQty, actualQuantity) => {
+    if (tolerance === 0 || targetQty === 0 || actualQuantity === 0) {
+      return false;
+    }
+
+    const toleranceValue = (tolerance / 100) * targetQty;
+    const lowerLimit = targetQty - toleranceValue;
+    const upperLimit = targetQty + toleranceValue;
+
+    const result = actualQuantity >= lowerLimit && actualQuantity <= upperLimit;
+    return result;
+  };
 
   function disconnectWebsocket() {
     if (ws.current) {
@@ -73,13 +107,16 @@ export default function Page() {
 
     ws.current.onopen = () => {
       console.log(`Connected to WebSocket server at ${url}`);
+      setIsConnectedToScaleValue(true);
     };
 
     ws.current.onmessage = (message) => {
-      setActualQuantity(parseFloat(message.data));
-      console.log(message.data);
-      setIsConnectedToScaleValue(true);
-      if (!isQuantityToleranced) {
+      const qty = parseFloat(message.data);
+      setActualQuantity(qty);
+
+      const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
+
+      if (!isToleranced) {
         fetch("http://127.0.0.1:1880" + "/api/error-signal", {
           method: "POST",
           headers: {
@@ -88,7 +125,9 @@ export default function Page() {
           body: JSON.stringify({
             sinyal: "merah",
           }),
-        });
+        })
+          .then(() => console.log("fired"))
+          .catch((err) => console.error(err));
       }
     };
 
@@ -101,30 +140,30 @@ export default function Page() {
     };
   }
 
-  const isMainInputEmpty = () => {
-    return sapNo === "" || batchNo === "" || productNo === "";
-  };
+  useEffect(() => {
+    if (ws.current) {
+      ws.current.onmessage = (message) => {
+        const qty = parseFloat(message.data);
+        setActualQuantity(qty);
 
-  const isMaterialInputEmpty = () => {
-    return (
-      materialNo === "" ||
-      packaging === "" ||
-      targetQty === 0 ||
-      targetQty === ""
-    );
-  };
+        const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
 
-  const isQuantityToleranced = () => {
-    if (tolerance === 0 || targetQty === 0 || actualQuantity === 0) {
-      return false;
+        if (!isToleranced) {
+          fetch("http://127.0.0.1:1880" + "/api/error-signal", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sinyal: "merah",
+            }),
+          })
+            .then(() => console.log("fired"))
+            .catch((err) => console.error(err));
+        }
+      };
     }
-
-    const toleranceValue = (tolerance / 100) * targetQty;
-    const lowerLimit = targetQty - toleranceValue;
-    const upperLimit = targetQty + toleranceValue;
-
-    return actualQuantity >= lowerLimit && actualQuantity <= upperLimit;
-  };
+  }, [actualQuantity, tolerance, targetQty]);
 
   const handleStartWeighingProcess = async () => {
     try {
@@ -246,7 +285,7 @@ export default function Page() {
 
   const handleStopMaterialWeighing = async () => {
     try {
-      if (!isQuantityToleranced()) {
+      if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
         console.error("Weigh out of tolerance");
         return;
       }
@@ -429,6 +468,8 @@ export default function Page() {
     setIsConnectedToScaleValue,
     connectWebSocket,
     isQuantityToleranced,
+    componentSAPToPrintRef,
+    handlePrintSAP,
   };
 
   return (
@@ -477,9 +518,7 @@ export default function Page() {
               </button>
               <button
                 className="basis-1/2 bg-slate-400"
-                onClick={() => {
-                  console.log(sap);
-                }}
+                onClick={handlePrintSAP}
               >
                 print
                 <br /> sap
@@ -489,6 +528,9 @@ export default function Page() {
             <Weight />
           </div>
         </div>
+      </div>
+      <div style={{ display: "none" }}>
+        <ComponentSAPToPrint />
       </div>
     </WeighingProcessContext.Provider>
   );
@@ -841,10 +883,7 @@ function FormWeighing() {
           type="number"
           onChange={(e) => {
             const value = e.target.valueAsNumber;
-            if (value === "") {
-              setTargetQty(0);
-              return;
-            }
+
             setTargetQty(value);
           }}
         />
@@ -867,8 +906,10 @@ function FormWeighing() {
 }
 
 function ComponentSAPToPrint() {
+  const { componentSAPToPrintRef } = useWeighingContext();
+
   return (
-    <div className={styles.printArea} ref={ref}>
+    <div className={styles.printArea} ref={componentSAPToPrintRef}>
       <br />
       <div style={{ display: "flex", gap: "10px" }}>
         <div style={{ flexBasis: "50%" }}>
