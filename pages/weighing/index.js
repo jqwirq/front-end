@@ -55,17 +55,26 @@ export default function Page() {
   // const [eventSource, setEventSource] = useState(null);
 
   const componentSAPToPrintRef = useRef();
+  const componentMaterialToPrintRef = useRef();
 
-  const handlePrintSAP = () => {
-    if (sap !== null && sap.isCompleted) {
-      console.log(sap);
-    } else {
-      console.error("error");
-    }
-  };
-  // const handlePrintSAP = useReactToPrint({
-  //   content: () => (sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null),
-  // });
+  // const handlePrintSAP = () => {
+  //   if (sap !== null && sap.isCompleted) {
+  //     console.log(sap);
+  //   } else {
+  //     console.error("error");
+  //   }
+  // };
+  const handlePrintSAP = useReactToPrint({
+    content: () =>
+      sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
+  });
+
+  const handlePrintMaterial = useReactToPrint({
+    content: () =>
+      material !== null && material.isCompleted
+        ? componentMaterialToPrintRef.current
+        : null,
+  });
 
   const isMainInputEmpty = () => {
     return sapNo === "" || batchNo === "" || productNo === "";
@@ -204,9 +213,9 @@ export default function Page() {
     }
   };
 
-  // useEffect(() => {
-  //   console.log(sap);
-  // }, [sap]);
+  useEffect(() => {
+    console.log(sap);
+  }, [sap]);
 
   const handleStopWeighingProcess = async () => {
     try {
@@ -422,9 +431,13 @@ export default function Page() {
   // }, [sapNo, batchNo, productNo]);
 
   const value = {
-    products,
+    sap,
+    setSAP,
     product,
     setProduct,
+    products,
+    material,
+    setMaterial,
     isWeighingProcess,
     setIsWeighingProcess,
     isMaterialProcess,
@@ -469,7 +482,9 @@ export default function Page() {
     connectWebSocket,
     isQuantityToleranced,
     componentSAPToPrintRef,
+    componentMaterialToPrintRef,
     handlePrintSAP,
+    handlePrintMaterial,
   };
 
   return (
@@ -508,21 +523,13 @@ export default function Page() {
             <div className="col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-4 text-base px-4">
               <button
                 className="basis-1/2 bg-slate-400"
-                onClick={() => {
-                  console.log(material);
-                }}
+                onClick={handlePrintMaterial}
               >
                 print
                 <br />
                 material
               </button>
-              <button
-                className="basis-1/2 bg-slate-400"
-                onClick={handlePrintSAP}
-              >
-                print
-                <br /> sap
-              </button>
+              <PrintSAPComponent />
             </div>
 
             <Weight />
@@ -533,6 +540,21 @@ export default function Page() {
         <ComponentSAPToPrint />
       </div>
     </WeighingProcessContext.Provider>
+  );
+}
+
+function PrintSAPComponent() {
+  const { handlePrintSAP } = useWeighingContext();
+  return (
+    <button
+      className="basis-1/2 bg-slate-400"
+      onClick={() => {
+        console.log("help");
+      }}
+    >
+      print
+      <br /> sap
+    </button>
   );
 }
 
@@ -906,97 +928,122 @@ function FormWeighing() {
 }
 
 function ComponentSAPToPrint() {
-  const { componentSAPToPrintRef } = useWeighingContext();
+  const { componentSAPToPrintRef, sap, componentMaterialToPrintRef, material } =
+    useWeighingContext();
 
   return (
-    <div className={styles.printArea} ref={componentSAPToPrintRef}>
-      <br />
-      <div style={{ display: "flex", gap: "10px" }}>
-        <div style={{ flexBasis: "50%" }}>
-          <div className={styles.upperData}>
-            <div>SAP</div>
-            <div>:&nbsp;00000000</div>
+    <>
+      {sap !== null && (
+        <div className={styles.printArea} ref={componentSAPToPrintRef}>
+          <br />
+          <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ flexBasis: "50%" }}>
+              <div className={styles.upperData}>
+                <div>SAP</div>
+                <div>:&nbsp;{sap.no}</div>
+              </div>
+              <div className={styles.upperData}>
+                <div>Batch No</div>
+                <div>:&nbsp;{sap.batchNo}</div>
+              </div>
+              <div className={styles.upperData}>
+                <div>Product No</div>
+                <div>:&nbsp;{sap.productNo}</div>
+              </div>
+            </div>
+            <div style={{ flexBasis: "50%" }}>
+              <div className={styles.upperData}>
+                <div>Date</div>
+                <div>:&nbsp;Date</div>
+              </div>
+              <div className={styles.upperData}>
+                <div>Duration</div>
+                <div>:&nbsp;Duration</div>
+              </div>
+            </div>
           </div>
-          <div className={styles.upperData}>
-            <div>Batch No</div>
-            <div>:&nbsp;00000000</div>
+          <br />
+          <div className={styles.tableTest}>
+            <table>
+              <thead>
+                <tr>
+                  <td>M</td>
+                  <td>Q</td>
+                  <td>P</td>
+                  <td>D</td>
+                </tr>
+              </thead>
+              <tbody>
+                {sap !== null &&
+                  sap.materials.map((m) => (
+                    <tr key={m.no}>
+                      <td>{m.no}</td>
+                      <td>{m.quantity}</td>
+                      <td>{m.packaging}</td>
+                      <td>date</td>
+                    </tr>
+                  ))}
+                {/* <tr>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                </tr>
+                <tr>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                </tr>
+                <tr>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                </tr>
+                <tr>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                </tr>
+                <tr>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                  <td>XXXXXXXXXX</td>
+                </tr> */}
+              </tbody>
+            </table>
           </div>
-          <div className={styles.upperData}>
-            <div>Product No</div>
-            <div>:&nbsp;00000000</div>
-          </div>
-        </div>
-        <div style={{ flexBasis: "50%" }}>
-          <div className={styles.upperData}>
-            <div>Date</div>
-            <div>:&nbsp;XXXXXXXX</div>
-          </div>
-          <div className={styles.upperData}>
-            <div>Duration</div>
-            <div>:&nbsp;00000000</div>
-          </div>
-        </div>
-      </div>
-      <br />
-      <div className={styles.tableTest}>
-        <table>
-          <thead>
-            <tr>
-              <td>M</td>
-              <td>Q</td>
-              <td>P</td>
-              <td>D</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-            </tr>
-            <tr>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-            </tr>
-            <tr>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-            </tr>
-            <tr>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-            </tr>
-            <tr>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-              <td>XXXXXXXXXX</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <br />
-      <br />
-      <div style={{ display: "flex" }}>
-        <div style={{ flexBasis: "50%" }}>
-          <div style={{ textAlign: "center" }}>Weighing by</div>
           <br />
           <br />
-          <br />
-          <br />
-          <br />
+          <div style={{ display: "flex" }}>
+            <div style={{ flexBasis: "50%" }}>
+              <div style={{ textAlign: "center" }}>Weighing by</div>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <hr />
+            </div>
+          </div>
           <hr />
         </div>
-      </div>
-      <hr />
-    </div>
+      )}
+
+      {material !== null && (
+        <>
+          <div ref={componentMaterialToPrintRef}>
+            <div>Material No: {material.no}</div>
+            <div>Packaging: {material.packaging}</div>
+            <div>Date</div>
+            <div>Duration</div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
