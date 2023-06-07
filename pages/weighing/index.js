@@ -57,35 +57,32 @@ export default function Page() {
   const componentSAPToPrintRef = useRef();
   const componentMaterialToPrintRef = useRef();
 
-  const handlePrintSAP = () => {
-    if (sap !== null && sap.isCompleted) {
-      const duration = formatTimeDifference(sap.duration);
-      console.log(duration);
-    } else {
-      console.error("error");
-    }
-  };
-  const handlePrintMaterial = () => {
-    if (sap !== null && sap.isCompleted) {
-      const duration = formatTimeDifference(material.duration);
-      console.log(duration);
-      // const duration = formatTimeDifference(sap.duration);
-      // console.log(duration);
-    } else {
-      console.error("error");
-    }
-  };
-  // const handlePrintSAP = useReactToPrint({
-  //   content: () =>
-  //     sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
-  // });
+  // const handlePrintSAP = () => {
+  //   if (sap !== null && sap.isCompleted) {
+  //     const duration = formatTimeDifference(sap.duration);
+  //     console.log(duration);
+  //   } else {
+  //     console.error("error");
+  //   }
+  // };
 
-  // const handlePrintMaterial = useReactToPrint({
-  //   content: () =>
-  //     material !== null && material.isCompleted
-  //       ? componentMaterialToPrintRef.current
-  //       : null,
-  // });
+  // const handlePrintMaterial = () => {
+  //   if (sap !== null && sap.isCompleted) {
+  //     const duration = formatTimeDifference(material.duration);
+  //     console.log(duration);
+  //     // const duration = formatTimeDifference(sap.duration);
+  //     // console.log(duration);
+  //   } else {
+  //     console.error("error");
+  //   }
+  // };
+
+  const handlePrintMaterial = useReactToPrint({
+    content: () =>
+      material !== null && material.isCompleted
+        ? componentMaterialToPrintRef.current
+        : null,
+  });
 
   const isMainInputEmpty = () => {
     return sapNo === "" || batchNo === "" || productNo === "";
@@ -494,7 +491,6 @@ export default function Page() {
     isQuantityToleranced,
     componentSAPToPrintRef,
     componentMaterialToPrintRef,
-    handlePrintSAP,
     handlePrintMaterial,
   };
 
@@ -570,14 +566,15 @@ function PrintSAPComponent() {
   }, [sap]);
 
   useEffect(() => {
-    console.log(checkedItems);
     // if any item is unchecked, set allChecked to false
-    if (checkedItems.length !== sap.materials.length) {
-      setAllChecked(false);
-    }
-    // if all items are checked, set allChecked to true
-    else if (checkedItems.length === sap.materials.length) {
-      setAllChecked(true);
+    if (sap !== null) {
+      if (checkedItems.length !== sap.materials.length) {
+        setAllChecked(false);
+      }
+      // if all items are checked, set allChecked to true
+      else if (checkedItems.length === sap.materials.length) {
+        setAllChecked(true);
+      }
     }
   }, [checkedItems, sap]);
 
@@ -651,7 +648,7 @@ function PrintSAPComponent() {
                       </div>
                     </div>
                     <div className="text-lg">
-                      <table className="w-full">
+                      <table className="w-full text-center">
                         <thead className="">
                           <tr>
                             <th>
@@ -663,32 +660,36 @@ function PrintSAPComponent() {
                               />
                             </th>
                             <th className="p-2">Material No.</th>
-                            {/* <th className="p-2">Quantity</th>
+                            <th className="p-2">Quantity</th>
                             <th className="p-2">Packaging</th>
-                            <th className="p-2">Duration</th> */}
+                            <th className="p-2">Duration</th>
                           </tr>
                         </thead>
-                        {sap.materials.length !== 0 &&
-                          sap.materials.map((m) => (
-                            <tr key={m._id}>
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  className="cursor-pointer"
-                                  checked={checkedItems.some(
-                                    (checkedItem) => checkedItem._id === m._id
-                                  )}
-                                  onChange={(event) =>
-                                    handleCheckChange(event, m)
-                                  }
-                                />
-                              </td>
-                              <td>{m.no} </td>
-                            </tr>
-                          ))}
+                        <tbody>
+                          {sap.materials.length !== 0 &&
+                            sap.materials.map((m) => (
+                              <tr key={m._id}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    className="cursor-pointer"
+                                    checked={checkedItems.some(
+                                      (checkedItem) => checkedItem._id === m._id
+                                    )}
+                                    onChange={(event) =>
+                                      handleCheckChange(event, m)
+                                    }
+                                  />
+                                </td>
+                                <td>{m.no}</td>
+                                <td>{m.quantity} Kg.</td>
+                                <td>{m.packaging}</td>
+                                <td>{formatTimeDifference(m.duration)}</td>
+                              </tr>
+                            ))}
+                        </tbody>
                       </table>
                     </div>
-                    <button onClick={handlePrintSAP}>print</button>
                   </div>
                 </>
               ) : (
@@ -696,14 +697,25 @@ function PrintSAPComponent() {
               )}
             </div>
 
-            <button
-              onClick={() => {
-                setisOpen(false);
-              }}
-              className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
-            >
-              Close
-            </button>
+            <div className="w-full flex justify-around">
+              {sap !== null && (
+                <button
+                  className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+                  onClick={handlePrintSAP}
+                >
+                  print
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setisOpen(false);
+                }}
+                className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1086,7 +1098,7 @@ function FormWeighing() {
   );
 }
 
-function ComponentSAPToPrint({ checkedItems }) {
+function ComponentSAPToPrint(props, ref) {
   const { componentSAPToPrintRef, sap, componentMaterialToPrintRef, material } =
     useWeighingContext();
 
@@ -1096,29 +1108,34 @@ function ComponentSAPToPrint({ checkedItems }) {
         <div className={styles.printArea} ref={componentSAPToPrintRef}>
           {/* <hr style={{ height: "5px", color: "black" }} /> */}
           {/* <br /> */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <div style={{ flexBasis: "50%" }}>
-              <div className={styles.upperData}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: "9px",
+              justifyContent: "space-between",
+              gap: "10px",
+            }}
+          >
+            <div className="flex basis-1/2 gap-2">
+              <div className="">
                 <div>SAP</div>
-                <div>:&nbsp;{sap.no}</div>
-              </div>
-              <div className={styles.upperData}>
                 <div>Batch No</div>
-                <div>:&nbsp;{sap.batchNo}</div>
-              </div>
-              <div className={styles.upperData}>
                 <div>Product No</div>
+              </div>
+              <div className="">
+                <div>:&nbsp;{sap.no}</div>
+                <div>:&nbsp;{sap.batchNo}</div>
                 <div>:&nbsp;{sap.productNo}</div>
               </div>
             </div>
-            <div style={{ flexBasis: "50%" }}>
-              <div className={styles.upperData}>
+            <div className="flex basis-1/2 gap-2">
+              <div className="">
                 <div>Date</div>
-                <div>:&nbsp;Date</div>
-              </div>
-              <div className={styles.upperData}>
                 <div>Duration</div>
-                <div>:&nbsp;Duration</div>
+              </div>
+              <div className="">
+                <div>:&nbsp;{formatDateSimple(sap.createdAt)}</div>
+                <div>:&nbsp;{formatTimeDifference(sap.duration)}</div>
               </div>
             </div>
           </div>
@@ -1127,20 +1144,20 @@ function ComponentSAPToPrint({ checkedItems }) {
             <table>
               <thead>
                 <tr>
-                  <td>M</td>
-                  <td>Q</td>
-                  <td>P</td>
-                  <td>D</td>
+                  <th>M</th>
+                  <th>Q</th>
+                  <th>P</th>
+                  <th>D</th>
                 </tr>
               </thead>
               <tbody>
                 {sap !== null &&
-                  checkedItems.map((m) => (
+                  props.checkedItems.map((m) => (
                     <tr key={m._id}>
                       <td>{m.no}</td>
-                      <td>{m.quantity}2 Kg</td>
-                      <td>Botol 250mL-1000mL</td>
-                      <td>00:00:00</td>
+                      <td>{m.quantity} Kg</td>
+                      <td>{m.packaging}</td>
+                      <td>{formatTimeDifference(m.duration)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -1168,11 +1185,35 @@ function ComponentSAPToPrint({ checkedItems }) {
 
       {material !== null && (
         <>
-          <div ref={componentMaterialToPrintRef}>
-            <div>Material No: {material.no}</div>
-            <div>Packaging: {material.packaging}</div>
-            <div>Date</div>
-            <div>Duration</div>
+          <div style={{ fontSize: "14px" }} ref={componentMaterialToPrintRef}>
+            <div className="flex gap-4">
+              <div>
+                <div>Material No</div>
+                <div>Packaging</div>
+                <div>Date</div>
+                <div>Duration</div>
+              </div>
+              <div>
+                <div>: {material.no}</div>
+                {/* <div>: {material.packaging}</div> */}
+                <div>: Botol 250mL-1000mL</div>
+                <div>: {formatDateSimple(material.startTime)}</div>
+                <div>: {formatTimeDifference(material.duration)}</div>
+              </div>
+            </div>
+            <br />
+            <br />
+            <div style={{ display: "flex" }}>
+              <div style={{ flexBasis: "50%" }}>
+                <div style={{ textAlign: "center" }}>Weighing by</div>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <div style={{ textAlign: "center" }}>___________</div>
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -1208,4 +1249,18 @@ function formatDate(timestamp) {
     year: "numeric",
   };
   return date.toLocaleDateString("en-US", options);
+}
+
+function formatDateSimple(timestamp) {
+  const date = new Date(timestamp);
+
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const year = String(date.getUTCFullYear()).slice(-2);
+
+  return `${day}-${month}-${year}`;
 }
