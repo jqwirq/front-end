@@ -57,24 +57,35 @@ export default function Page() {
   const componentSAPToPrintRef = useRef();
   const componentMaterialToPrintRef = useRef();
 
-  // const handlePrintSAP = () => {
-  //   if (sap !== null && sap.isCompleted) {
-  //     console.log(sap);
-  //   } else {
-  //     console.error("error");
-  //   }
-  // };
-  const handlePrintSAP = useReactToPrint({
-    content: () =>
-      sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
-  });
+  const handlePrintSAP = () => {
+    if (sap !== null && sap.isCompleted) {
+      const duration = formatTimeDifference(sap.duration);
+      console.log(duration);
+    } else {
+      console.error("error");
+    }
+  };
+  const handlePrintMaterial = () => {
+    if (sap !== null && sap.isCompleted) {
+      const duration = formatTimeDifference(material.duration);
+      console.log(duration);
+      // const duration = formatTimeDifference(sap.duration);
+      // console.log(duration);
+    } else {
+      console.error("error");
+    }
+  };
+  // const handlePrintSAP = useReactToPrint({
+  //   content: () =>
+  //     sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
+  // });
 
-  const handlePrintMaterial = useReactToPrint({
-    content: () =>
-      material !== null && material.isCompleted
-        ? componentMaterialToPrintRef.current
-        : null,
-  });
+  // const handlePrintMaterial = useReactToPrint({
+  //   content: () =>
+  //     material !== null && material.isCompleted
+  //       ? componentMaterialToPrintRef.current
+  //       : null,
+  // });
 
   const isMainInputEmpty = () => {
     return sapNo === "" || batchNo === "" || productNo === "";
@@ -536,25 +547,170 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <div style={{ display: "none" }}>
-        <ComponentSAPToPrint />
-      </div>
     </WeighingProcessContext.Provider>
   );
 }
 
 function PrintSAPComponent() {
-  const { handlePrintSAP } = useWeighingContext();
+  const { sap, componentSAPToPrintRef } = useWeighingContext();
+  const [isOpen, setisOpen] = useState(false);
+
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [allChecked, setAllChecked] = useState(true);
+
+  const handlePrintSAP = useReactToPrint({
+    content: () =>
+      sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
+  });
+
+  useEffect(() => {
+    if (sap !== null) {
+      setCheckedItems(sap.materials);
+    }
+  }, [sap]);
+
+  useEffect(() => {
+    console.log(checkedItems);
+    // if any item is unchecked, set allChecked to false
+    if (checkedItems.length !== sap.materials.length) {
+      setAllChecked(false);
+    }
+    // if all items are checked, set allChecked to true
+    else if (checkedItems.length === sap.materials.length) {
+      setAllChecked(true);
+    }
+  }, [checkedItems, sap]);
+
+  const handleCheckChange = (event, item) => {
+    if (event.target.checked) {
+      setCheckedItems((prevItems) => [...prevItems, item]);
+    } else {
+      setCheckedItems((prevItems) =>
+        prevItems.filter((i) => i._id !== item._id)
+      );
+    }
+  };
+
+  const handleAllCheckChange = (event) => {
+    setAllChecked(event.target.checked);
+    if (event.target.checked && sap) {
+      setCheckedItems(sap.materials);
+    } else {
+      setCheckedItems([]);
+    }
+  };
+
+  const handleButtonClick = () => {
+    console.log(checkedItems);
+  };
+
   return (
-    <button
-      className="basis-1/2 bg-slate-400"
-      onClick={() => {
-        console.log("help");
-      }}
-    >
-      print
-      <br /> sap
-    </button>
+    <>
+      <button
+        className="basis-1/2 bg-slate-400"
+        onClick={() => {
+          // handlePrintSAP()
+          setisOpen(true);
+        }}
+      >
+        print
+        <br /> sap
+      </button>
+
+      {isOpen && (
+        <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
+          <div
+            className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-100`}
+          >
+            <div className="text-4xl">
+              {sap !== null ? (
+                <>
+                  <div>
+                    <div className="flex gap-8 text-lg">
+                      <div className="flex gap-4">
+                        <div>
+                          <div>SAPOrder No.</div>
+                          <div>Batch No.</div>
+                          <div>Product No.</div>
+                        </div>
+                        <div>
+                          <div>: {sap.no}</div>
+                          <div>: {sap.batchNo}</div>
+                          <div>: {sap.productNo}</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div>
+                          <div>Date</div>
+                          <div>Duration</div>
+                        </div>
+                        <div>
+                          <div>: {formatDate(sap.createdAt)}</div>
+                          <div>: {formatTimeDifference(sap.duration)}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-lg">
+                      <table className="w-full">
+                        <thead className="">
+                          <tr>
+                            <th>
+                              <input
+                                className="cursor-pointer"
+                                type="checkbox"
+                                checked={allChecked}
+                                onChange={handleAllCheckChange}
+                              />
+                            </th>
+                            <th className="p-2">Material No.</th>
+                            {/* <th className="p-2">Quantity</th>
+                            <th className="p-2">Packaging</th>
+                            <th className="p-2">Duration</th> */}
+                          </tr>
+                        </thead>
+                        {sap.materials.length !== 0 &&
+                          sap.materials.map((m) => (
+                            <tr key={m._id}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  className="cursor-pointer"
+                                  checked={checkedItems.some(
+                                    (checkedItem) => checkedItem._id === m._id
+                                  )}
+                                  onChange={(event) =>
+                                    handleCheckChange(event, m)
+                                  }
+                                />
+                              </td>
+                              <td>{m.no} </td>
+                            </tr>
+                          ))}
+                      </table>
+                    </div>
+                    <button onClick={handlePrintSAP}>print</button>
+                  </div>
+                </>
+              ) : (
+                "Empty"
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setisOpen(false);
+              }}
+              className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      <div style={{ display: "none" }}>
+        <ComponentSAPToPrint checkedItems={checkedItems} />
+      </div>
+    </>
   );
 }
 
@@ -709,31 +865,34 @@ function ScaleSelectButton() {
     <div className="col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl">
       <div className="flex w-full gap-4 justify-center items-center">
         <button
-          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws1")}
-          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
-          disabled={!isMaterialProcess}
+          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2ton")}
+          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
+          // disabled={!isMaterialProcess}
         >
           2 ton
         </button>
 
         <button
-          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
-          disabled={!isMaterialProcess}
+          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350tscale")}
+          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
+          // disabled={!isMaterialProcess}
         >
           350 Kg
         </button>
       </div>
       <div className="flex w-full gap-4 justify-center items-center">
         <button
-          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
-          disabled={!isMaterialProcess}
+          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350jic")}
+          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
+          // disabled={!isMaterialProcess}
         >
           2 Kg
         </button>
 
         <button
-          className="bg-slate-400 py-2 hover:bg-slate-300 basis-1/2"
-          disabled={!isMaterialProcess}
+          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2kg")}
+          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
+          // disabled={!isMaterialProcess}
         >
           ...
         </button>
@@ -927,7 +1086,7 @@ function FormWeighing() {
   );
 }
 
-function ComponentSAPToPrint() {
+function ComponentSAPToPrint({ checkedItems }) {
   const { componentSAPToPrintRef, sap, componentMaterialToPrintRef, material } =
     useWeighingContext();
 
@@ -935,7 +1094,8 @@ function ComponentSAPToPrint() {
     <>
       {sap !== null && (
         <div className={styles.printArea} ref={componentSAPToPrintRef}>
-          <br />
+          {/* <hr style={{ height: "5px", color: "black" }} /> */}
+          {/* <br /> */}
           <div style={{ display: "flex", gap: "10px" }}>
             <div style={{ flexBasis: "50%" }}>
               <div className={styles.upperData}>
@@ -975,44 +1135,14 @@ function ComponentSAPToPrint() {
               </thead>
               <tbody>
                 {sap !== null &&
-                  sap.materials.map((m) => (
-                    <tr key={m.no}>
+                  checkedItems.map((m) => (
+                    <tr key={m._id}>
                       <td>{m.no}</td>
-                      <td>{m.quantity}</td>
-                      <td>{m.packaging}</td>
-                      <td>date</td>
+                      <td>{m.quantity}2 Kg</td>
+                      <td>Botol 250mL-1000mL</td>
+                      <td>00:00:00</td>
                     </tr>
                   ))}
-                {/* <tr>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                </tr>
-                <tr>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                </tr>
-                <tr>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                </tr>
-                <tr>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                </tr>
-                <tr>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                  <td>XXXXXXXXXX</td>
-                </tr> */}
               </tbody>
             </table>
           </div>
@@ -1027,10 +1157,12 @@ function ComponentSAPToPrint() {
               <br />
               <br />
               <br />
-              <hr />
+              <div style={{ textAlign: "center" }}>___________</div>
             </div>
           </div>
-          <hr />
+          <div style={{ textAlign: "center", overflow: "hidden" }}>
+            -------------------------------------------------------------------------------
+          </div>
         </div>
       )}
 
@@ -1046,4 +1178,34 @@ function ComponentSAPToPrint() {
       )}
     </>
   );
+}
+
+function formatTimeDifference(duration) {
+  // Convert duration from milliseconds to seconds
+  const difference = duration / 1000;
+
+  const hours = Math.floor(difference / 3600);
+  const minutes = Math.floor((difference % 3600) / 60);
+  const seconds = Math.floor(difference % 60);
+
+  const formattedHours = String(hours).padStart(2, "0");
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(seconds).padStart(2, "0");
+
+  if (hours === 0) {
+    return `${formattedMinutes}:${formattedSeconds}`;
+  }
+
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  const options = {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+  return date.toLocaleDateString("en-US", options);
 }
