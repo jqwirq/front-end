@@ -23,6 +23,13 @@ export default function Page() {
         >
           Weighing Process
         </Link>
+
+        <Link
+          className="py-4 text-6xl text-center bg-slate-300 hover:bg-slate-400 active:bg-slate-300"
+          href="/sap/list"
+        >
+          SAP
+        </Link>
       </div>
     </div>
   );
