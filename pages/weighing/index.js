@@ -1177,9 +1177,9 @@ function ComponentSAPToPrint(props, ref) {
               <div style={{ textAlign: "center" }}>___________</div>
             </div>
           </div>
-          <div style={{ textAlign: "center", overflow: "hidden" }}>
+          {/* <div style={{ textAlign: "center", overflow: "hidden" }}>
             -------------------------------------------------------------------------------
-          </div>
+          </div> */}
         </div>
       )}
 
