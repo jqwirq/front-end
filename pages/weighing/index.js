@@ -50,10 +50,6 @@ export default function Page() {
   const toleranceRef = useRef(0);
   const ws = useRef(null);
 
-  // SSE useless
-  // const [data, setData] = useState("");
-  // const [eventSource, setEventSource] = useState(null);
-
   const componentSAPToPrintRef = useRef();
   const componentMaterialToPrintRef = useRef();
 
@@ -114,7 +110,7 @@ export default function Page() {
     if (ws.current) {
       ws.current.close();
       ws.current = null;
-      console.log("Disconnected from WebSocket server");
+      setIsConnectedToScaleValue(false);
     }
   }
 
@@ -127,7 +123,7 @@ export default function Page() {
       setIsConnectedToScaleValue(true);
     };
 
-    ws.current.onmessage = (message) => {
+    ws.current.onmessage = message => {
       const qty = parseFloat(message.data);
       setActualQuantity(qty);
 
@@ -139,27 +135,25 @@ export default function Page() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            sinyal: "merah",
-          }),
+          body: "merah",
         })
           .then(() => console.log("fired"))
-          .catch((err) => console.error(err));
+          .catch(err => console.error(err));
       }
     };
 
-    ws.current.onerror = (error) => {
+    ws.current.onerror = error => {
       console.log(error);
     };
 
-    ws.current.onclose = (event) => {
+    ws.current.onclose = event => {
       console.log(`Disconnected from WebSocket server at ${url}`);
     };
   }
 
   useEffect(() => {
     if (ws.current) {
-      ws.current.onmessage = (message) => {
+      ws.current.onmessage = message => {
         const qty = parseFloat(message.data);
         setActualQuantity(qty);
 
@@ -176,7 +170,7 @@ export default function Page() {
             }),
           })
             .then(() => console.log("fired"))
-            .catch((err) => console.error(err));
+            .catch(err => console.error(err));
         }
       };
     }
@@ -214,15 +208,16 @@ export default function Page() {
 
       console.log(responseJson);
 
+      setMaterial(null);
       setSAP(responseJson.SAP);
       setIsWeighingProcess(true);
     } catch (err) {
-      (err) => console.error(err);
+      err => console.error(err);
     }
   };
 
   useEffect(() => {
-    console.log(sap);
+    // console.log(sap);
   }, [sap]);
 
   const handleStopWeighingProcess = async () => {
@@ -259,7 +254,7 @@ export default function Page() {
       setIsWeighingProcess(false);
       setProductTime(0);
     } catch (err) {
-      (err) => console.error(err);
+      err => console.error(err);
     }
   };
 
@@ -336,6 +331,7 @@ export default function Page() {
       }
 
       console.log(responseJson);
+      disconnectWebsocket();
       setMaterial(responseJson.material);
       resetMaterial();
       setIsMaterialProcess(false);
@@ -376,14 +372,14 @@ export default function Page() {
 
   useEffect(() => {
     fetch(API_URL + "/products")
-      .then((res) => {
+      .then(res => {
         return res.json();
       })
-      .then((res) => {
-        console.log("setProducts, useEffect[]", res);
+      .then(res => {
+        // console.log("setProducts, useEffect[]", res);
         setProducts(res);
       })
-      .catch((err) => console.error(err));
+      .catch(err => console.error(err));
 
     return () => {
       disconnectWebsocket();
@@ -394,7 +390,7 @@ export default function Page() {
     let interval;
     if (isWeighingProcess) {
       interval = setInterval(() => {
-        setProductTime((prevTime) => prevTime + 100);
+        setProductTime(prevTime => prevTime + 100);
       }, 100);
     } else if (!isWeighingProcess) {
       clearInterval(interval);
@@ -410,7 +406,7 @@ export default function Page() {
     let interval;
     if (isMaterialProcess) {
       interval = setInterval(() => {
-        setMaterialTime((prevTime) => prevTime + 100);
+        setMaterialTime(prevTime => prevTime + 100);
       }, 100);
     } else if (!isMaterialProcess) {
       clearInterval(interval);
@@ -496,25 +492,25 @@ export default function Page() {
 
   return (
     <WeighingProcessContext.Provider value={value}>
-      <div className="bg-slate-100 min-h-screen">
-        <div className="min-h-screen max-h-screen flex flex-col">
-          <div className="bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center">
+      <div className='bg-slate-100 min-h-screen'>
+        <div className='min-h-screen max-h-screen flex flex-col'>
+          <div className='bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center'>
             <Link
-              className="text-xl hover:text-slate-300 active:text-slate-200"
-              href="/"
+              className='text-xl hover:text-slate-300 active:text-slate-200'
+              href='/'
             >
               back
             </Link>
 
-            <h1 className="tracking-widest font-semibold text-xl">
+            <h1 className='tracking-widest font-semibold text-xl'>
               Weighing Process
             </h1>
           </div>
 
           <div
-            className="grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl"
+            className='grow grid grid-cols-10 grid-rows-6 gap-4 px-2 md:px-[1%] lg:px-[3%] py-2 text-2xl'
             style={{
-              gridTemplateRows: "1fr 1fr .8fr .4fr 1fr 1fr",
+              gridTemplateRows: "1fr 1fr .8fr .4fr .9fr .9fr",
               gridTemplateColumns:
                 "1fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 1fr 1fr 1fr 1fr",
             }}
@@ -527,15 +523,27 @@ export default function Page() {
 
             <StartButton />
 
-            <div className="col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-4 text-base px-4">
+            <div className='col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-2 text-base px-2'>
               <button
-                className="basis-1/2 bg-slate-400"
-                onClick={handlePrintMaterial}
+                className={`basis-1/2 py-4 text-sm ${
+                  !material || material === null || !material.isCompleted
+                    ? "bg-slate-400 brightness-90 text-slate-700"
+                    : "bg-slate-300 hover:brightness-105 active:brightness-90 cursor-pointer"
+                }`}
+                onClick={() => {
+                  if (material && material !== null && material.isCompleted) {
+                    handlePrintMaterial();
+                  } else {
+                    console.error("Empty data");
+                  }
+                }}
+                disabled={
+                  !material || material === null || !material.isCompleted
+                }
               >
-                print
-                <br />
-                material
+                Print material receipt
               </button>
+
               <PrintSAPComponent />
             </div>
 
@@ -556,18 +564,20 @@ function PrintSAPComponent() {
 
   const handlePrintSAP = useReactToPrint({
     content: () =>
-      sap !== null && sap.isCompleted ? componentSAPToPrintRef.current : null,
+      sap && sap !== null && sap.isCompleted
+        ? componentSAPToPrintRef.current
+        : null,
   });
 
   useEffect(() => {
-    if (sap !== null) {
+    if (sap && sap !== null) {
       setCheckedItems(sap.materials);
     }
   }, [sap]);
 
   useEffect(() => {
     // if any item is unchecked, set allChecked to false
-    if (sap !== null) {
+    if (sap && sap !== null) {
       if (checkedItems.length !== sap.materials.length) {
         setAllChecked(false);
       }
@@ -580,15 +590,13 @@ function PrintSAPComponent() {
 
   const handleCheckChange = (event, item) => {
     if (event.target.checked) {
-      setCheckedItems((prevItems) => [...prevItems, item]);
+      setCheckedItems(prevItems => [...prevItems, item]);
     } else {
-      setCheckedItems((prevItems) =>
-        prevItems.filter((i) => i._id !== item._id)
-      );
+      setCheckedItems(prevItems => prevItems.filter(i => i._id !== item._id));
     }
   };
 
-  const handleAllCheckChange = (event) => {
+  const handleAllCheckChange = event => {
     setAllChecked(event.target.checked);
     if (event.target.checked && sap) {
       setCheckedItems(sap.materials);
@@ -597,34 +605,34 @@ function PrintSAPComponent() {
     }
   };
 
-  const handleButtonClick = () => {
-    console.log(checkedItems);
-  };
-
   return (
     <>
       <button
-        className="basis-1/2 bg-slate-400"
+        // className={`basis-1/2 bg-slate-400 py-4 text-sm`}
+        className={`basis-1/2 py-4 text-sm ${
+          !sap || sap === null || !sap.isCompleted
+            ? "bg-slate-400 brightness-90 text-slate-700"
+            : "bg-slate-300 hover:brightness-105 active:brightness-90"
+        }`}
         onClick={() => {
-          // handlePrintSAP()
           setisOpen(true);
         }}
+        disabled={!sap || sap === null || !sap.isCompleted}
       >
-        print
-        <br /> sap
+        Print sap receipt
       </button>
 
       {isOpen && (
-        <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center'>
           <div
             className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-100`}
           >
-            <div className="text-4xl">
-              {sap !== null ? (
+            <div className='text-4xl'>
+              {sap && sap !== null ? (
                 <>
                   <div>
-                    <div className="flex gap-8 text-lg">
-                      <div className="flex gap-4">
+                    <div className='flex gap-8 text-lg'>
+                      <div className='flex gap-4'>
                         <div>
                           <div>SAPOrder No.</div>
                           <div>Batch No.</div>
@@ -636,7 +644,7 @@ function PrintSAPComponent() {
                           <div>: {sap.productNo}</div>
                         </div>
                       </div>
-                      <div className="flex gap-4">
+                      <div className='flex gap-4'>
                         <div>
                           <div>Date</div>
                           <div>Duration</div>
@@ -647,36 +655,36 @@ function PrintSAPComponent() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-lg">
-                      <table className="w-full text-center">
-                        <thead className="">
+                    <div className='text-lg'>
+                      <table className='w-full text-center'>
+                        <thead className=''>
                           <tr>
                             <th>
                               <input
-                                className="cursor-pointer"
-                                type="checkbox"
+                                className='cursor-pointer'
+                                type='checkbox'
                                 checked={allChecked}
                                 onChange={handleAllCheckChange}
                               />
                             </th>
-                            <th className="p-2">Material No.</th>
-                            <th className="p-2">Quantity</th>
-                            <th className="p-2">Packaging</th>
-                            <th className="p-2">Duration</th>
+                            <th className='p-2'>Material No.</th>
+                            <th className='p-2'>Quantity</th>
+                            <th className='p-2'>Packaging</th>
+                            <th className='p-2'>Duration</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sap.materials.length !== 0 &&
-                            sap.materials.map((m) => (
+                            sap.materials.map(m => (
                               <tr key={m._id}>
                                 <td>
                                   <input
-                                    type="checkbox"
-                                    className="cursor-pointer"
+                                    type='checkbox'
+                                    className='cursor-pointer'
                                     checked={checkedItems.some(
-                                      (checkedItem) => checkedItem._id === m._id
+                                      checkedItem => checkedItem._id === m._id
                                     )}
-                                    onChange={(event) =>
+                                    onChange={event =>
                                       handleCheckChange(event, m)
                                     }
                                   />
@@ -697,10 +705,10 @@ function PrintSAPComponent() {
               )}
             </div>
 
-            <div className="w-full flex justify-around">
-              {sap !== null && (
+            <div className='w-full flex justify-around'>
+              {sap && sap !== null && (
                 <button
-                  className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+                  className='text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2'
                   onClick={handlePrintSAP}
                 >
                   print
@@ -711,7 +719,7 @@ function PrintSAPComponent() {
                 onClick={() => {
                   setisOpen(false);
                 }}
-                className="text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2"
+                className='text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2'
               >
                 Close
               </button>
@@ -731,13 +739,19 @@ function Weight() {
     useWeighingContext();
 
   return (
-    <div className="col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-start items-center px-2 pt-6 gap-4">
-      <div className="text-8xl bg-yellow-200 font-bold w-full p-4 text-center">
+    <div className='col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center px-2 gap-4'>
+      <div
+        className={`text-8xl font-bold w-full p-4 text-center ${
+          isConnectedToScaleValue
+            ? "bg-yellow-200 text-black"
+            : "bg-yellow-300 brightness-50 text-neutral-500"
+        }`}
+      >
         {actualQuantity.toFixed(2)} Kg
       </div>
 
-      <div className="flex justify-center text-3xl text-center gap-4 w-full">
-        <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
+      <div className='flex justify-center text-3xl text-center gap-4 w-full'>
+        <div className='bg-slate-500 text-slate-50 basis-1/2 py-2 px-4'>
           {/* {isConnectedToScaleValue
             ? "- " +
               (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
@@ -747,7 +761,7 @@ function Weight() {
             (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
             " Kg"}
         </div>
-        <div className="bg-slate-500 text-slate-50 basis-1/2 py-2 px-4">
+        <div className='bg-slate-500 text-slate-50 basis-1/2 py-2 px-4'>
           {/* {isConnectedToScaleValue
             ? "+ " +
               (targetQty + targetQty * (tolerance / 100)).toFixed(2) +
@@ -767,21 +781,32 @@ function Timers() {
     useWeighingContext();
 
   return (
-    <div className="col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-4">
-      <div className="flex flex-col items-center">
-        <div className="text-lg">Duration per Product</div>
-        <div className="bg-black text-white text-center py-2 px-6 text-5xl">
+    <div className='col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-2'>
+      <div className='flex flex-col items-center'>
+        <div className='text-lg'>Total Weighing Time</div>
+        <div
+          className={` text-center py-2 px-8 text-7xl ${
+            isWeighingProcess
+              ? "bg-black text-white"
+              : "bg-neutral-800 text-neutral-400"
+          }`}
+        >
           <span>
             {("0" + Math.floor((productTime / 60000) % 60)).slice(-2)}:
           </span>
           <span>{("0" + Math.floor((productTime / 1000) % 60)).slice(-2)}</span>
-          {/* <span>{("0" + ((productTime / 10) % 100)).slice(-2)}</span> */}
         </div>
       </div>
 
-      <div className="flex flex-col items-center">
-        <div className="text-lg">Duration per Material</div>
-        <div className="bg-black text-white text-center py-2 px-6 text-5xl">
+      <div className='flex flex-col items-center'>
+        <div className='text-lg'>Material Weighing Time</div>
+        <div
+          className={`bg-black text-center py-2 px-8 text-7xl ${
+            isMaterialProcess
+              ? "bg-black text-white"
+              : "bg-neutral-800 text-neutral-400"
+          }`}
+        >
           <span>
             {("0" + Math.floor((materialTime / 60000) % 60)).slice(-2)}:
           </span>
@@ -814,7 +839,7 @@ function StartButton() {
   } = useWeighingContext();
 
   return (
-    <div className="px-2 col-start-7 col-end-13 row-start-3 row-end-4 flex justify-center items-center gap-4 text-xl">
+    <div className='px-2 col-start-7 col-end-13 row-start-3 row-end-4 flex justify-center items-center gap-4 text-xl'>
       {isMaterialProcess ? (
         <button
           onClick={handleStopMaterialWeighing}
@@ -834,7 +859,7 @@ function StartButton() {
           }
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
-              ? "bg-green-700"
+              ? "bg-green-800 text-neutral-400"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
@@ -847,7 +872,7 @@ function StartButton() {
           onClick={handleStopWeighingProcess}
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || isMainInputEmpty()
-              ? "bg-red-700"
+              ? "bg-red-700 text-neutral-300"
               : "bg-red-600 hover:bg-red-500 "
           }`}
           disabled={isMaterialProcess}
@@ -860,7 +885,7 @@ function StartButton() {
           disabled={isWeighingProcess || isMainInputEmpty()}
           className={`basis-1/2 text-white py-4 ${
             isWeighingProcess || isMainInputEmpty()
-              ? "bg-green-700"
+              ? "bg-green-800 text-neutral-400"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
@@ -874,39 +899,55 @@ function StartButton() {
 function ScaleSelectButton() {
   const { connectWebSocket, isMaterialProcess } = useWeighingContext();
   return (
-    <div className="col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl">
-      <div className="flex w-full gap-4 justify-center items-center">
+    <div className='col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl'>
+      <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2ton")}
-          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
-          // disabled={!isMaterialProcess}
+          className={`basis-1/2 py-2 ${
+            !isMaterialProcess
+              ? "bg-slate-400 text-slate-700"
+              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+          }`}
+          disabled={!isMaterialProcess}
         >
-          2 ton
+          2 Ton
         </button>
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350tscale")}
-          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
-          // disabled={!isMaterialProcess}
+          className={`basis-1/2 py-2 ${
+            !isMaterialProcess
+              ? "bg-slate-400 text-slate-700"
+              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+          }`}
+          disabled={!isMaterialProcess}
         >
-          350 Kg
+          350 T
         </button>
       </div>
-      <div className="flex w-full gap-4 justify-center items-center">
+      <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350jic")}
-          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
-          // disabled={!isMaterialProcess}
+          className={`basis-1/2 py-2 ${
+            !isMaterialProcess
+              ? "bg-slate-400 text-slate-700"
+              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+          }`}
+          disabled={!isMaterialProcess}
         >
-          2 Kg
+          350 J
         </button>
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2kg")}
-          className={`basis-1/2 py-2 bg-slate-400 hover:bg-slate-300 `}
-          // disabled={!isMaterialProcess}
+          className={`basis-1/2 py-2 ${
+            !isMaterialProcess
+              ? "bg-slate-400 text-slate-700"
+              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+          }`}
+          disabled={!isMaterialProcess}
         >
-          ...
+          2 Kg
         </button>
       </div>
     </div>
@@ -936,7 +977,7 @@ function FormWeighing() {
   } = useWeighingContext();
 
   const timeoutRef = useRef(null);
-  const handleProductChange = (e) => {
+  const handleProductChange = e => {
     clearTimeout(timeoutRef.current);
     const targetValue = e.target.value;
     setProductNo(targetValue);
@@ -944,7 +985,7 @@ function FormWeighing() {
     if (targetValue) {
       timeoutRef.current = setTimeout(() => {
         fetch(API_URL + "/product/" + targetValue)
-          .then((res) => {
+          .then(res => {
             if (!res.ok) {
               // if HTTP status is not 200-299
               if (res.status === 400) {
@@ -960,7 +1001,7 @@ function FormWeighing() {
               return res.json();
             }
           })
-          .then((res) => {
+          .then(res => {
             if (res) {
               // if res is not undefined
               setProduct(res);
@@ -968,7 +1009,7 @@ function FormWeighing() {
               materialNoRef.current.value = "";
             }
           })
-          .catch((e) =>
+          .catch(e =>
             console.error(
               "There was a problem with the fetch operation: " + e.message
             )
@@ -980,8 +1021,8 @@ function FormWeighing() {
   };
 
   return (
-    <div className="col-span-6 row-span-4 flex flex-col gap-4 text-xl justify-center">
-      <div className="flex justify-between items-center">
+    <div className='col-span-6 row-span-4 flex flex-col gap-4 text-xl justify-center'>
+      <div className='flex justify-between items-center'>
         <div>SAP Order No.</div>
         <input
           ref={sapNoRef}
@@ -989,13 +1030,17 @@ function FormWeighing() {
             const no = sapNoRef.current.value;
             setSapNo(no);
           }}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="text"
+          className={`w-[55%] p-1 pl-4 text-2xl ${
+            isWeighingProcess
+              ? "bg-yellow-200 brightness-75 text-neutral-600"
+              : "bg-yellow-200"
+          }`}
+          type='text'
           disabled={isWeighingProcess}
         />
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Batch No.</div>
         <input
           ref={batchNoRef}
@@ -1003,24 +1048,32 @@ function FormWeighing() {
             const no = batchNoRef.current.value;
             setBatchNo(no);
           }}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="text"
+          className={`w-[55%] p-1 pl-4 text-2xl ${
+            isWeighingProcess
+              ? "bg-yellow-200 brightness-75 text-neutral-600"
+              : "bg-yellow-200"
+          }`}
+          type='text'
           disabled={isWeighingProcess}
         />
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Product No.</div>
         <input
           ref={productNoRef}
           onChange={handleProductChange}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          className={`w-[55%] p-1 pl-4 text-2xl ${
+            isWeighingProcess
+              ? "bg-yellow-200 brightness-75 text-neutral-600"
+              : "bg-yellow-200"
+          }`}
           disabled={isWeighingProcess}
-          list="productsNo"
+          list='productsNo'
         />
-        <datalist id="productsNo">
+        <datalist id='productsNo'>
           {products.length !== 0 &&
-            products.map((v) => (
+            products.map(v => (
               <option key={v._id} value={v.no}>
                 {v.no}
               </option>
@@ -1028,10 +1081,14 @@ function FormWeighing() {
         </datalist>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Material No.</div>
         <select
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
+          className={`w-[55%] p-1 pl-4 text-2xl ${
+            product === null
+              ? "bg-yellow-200 brightness-90"
+              : "bg-yellow-200 cursor-pointer"
+          }`}
           disabled={product === null}
           onChange={() => {
             const no = materialNoRef.current.value;
@@ -1039,9 +1096,9 @@ function FormWeighing() {
           }}
           ref={materialNoRef}
         >
-          <option value=""></option>
+          <option value=''></option>
           {product !== null &&
-            product.materials.map((v) => (
+            product.materials.map(v => (
               <option key={v._id} value={v.no}>
                 {v.no}
               </option>
@@ -1049,48 +1106,55 @@ function FormWeighing() {
         </select>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Packaging</div>
         <select
           ref={packagingRef}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          onChange={(e) => {
+          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl cursor-pointer'
+          onChange={e => {
             const value = e.target.value;
             setPackaging(value);
           }}
         >
-          <option value=""></option>
-          <option value="Sak">Sak</option>
-          <option value="Pail">Pail</option>
-          <option value="Drum">Drum</option>
-          <option value="IBC">IBC</option>
-          <option value="Botol 250mL-1000mL">Botol 250mL-1000mL</option>
+          <option value=''></option>
+          <option value='Sak'>Sak</option>
+          <option value='Pail'>Pail</option>
+          <option value='Drum'>Drum</option>
+          <option value='IBC'>IBC</option>
+          <option value='Botol 250mL-1000mL'>Botol 250mL-1000mL</option>
         </select>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Target Qty. (Kg.)</div>
         <input
           ref={targetQtyRef}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="number"
-          onChange={(e) => {
+          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl'
+          type='number'
+          onChange={e => {
             const value = e.target.valueAsNumber;
-
-            setTargetQty(value);
+            if (isNaN(value)) {
+              setTargetQty(0);
+            } else {
+              setTargetQty(value);
+            }
           }}
         />
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>Tolerance (%)</div>
         <input
           ref={toleranceRef}
-          className="w-[55%] bg-yellow-200 p-1 pl-4 text-2xl"
-          type="number"
-          onChange={(e) => {
+          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl'
+          type='number'
+          onChange={e => {
             const value = e.target.valueAsNumber;
-            setTolerance(value);
+            if (isNaN(value)) {
+              setTolerance(0);
+            } else {
+              setTolerance(value);
+            }
           }}
         />
       </div>
@@ -1104,89 +1168,94 @@ function ComponentSAPToPrint(props, ref) {
 
   return (
     <>
-      {sap !== null && (
-        <div className={styles.printArea} ref={componentSAPToPrintRef}>
-          {/* <hr style={{ height: "5px", color: "black" }} /> */}
-          {/* <br /> */}
-          <div
-            style={{
-              display: "flex",
-              fontSize: "9px",
-              justifyContent: "space-between",
-              gap: "10px",
-            }}
-          >
-            <div className="flex basis-1/2 gap-2">
-              <div className="">
-                <div>SAP</div>
-                <div>Batch No</div>
-                <div>Product No</div>
+      {sap &&
+        sap !== null &&
+        sap.no !== "" &&
+        sap.batchNo !== "" &&
+        sap.productNo !== "" && (
+          <div className={styles.printArea} ref={componentSAPToPrintRef}>
+            {/* <hr style={{ height: "5px", color: "black" }} /> */}
+            {/* <br /> */}
+            <div
+              style={{
+                display: "flex",
+                fontSize: "9px",
+                justifyContent: "space-between",
+                gap: "10px",
+              }}
+            >
+              <div className='flex basis-1/2 gap-2'>
+                <div className=''>
+                  <div>SAP</div>
+                  <div>Batch No</div>
+                  <div>Product No</div>
+                </div>
+                <div className=''>
+                  <div>:&nbsp;{sap.no}</div>
+                  <div>:&nbsp;{sap.batchNo}</div>
+                  <div>:&nbsp;{sap.productNo}</div>
+                </div>
               </div>
-              <div className="">
-                <div>:&nbsp;{sap.no}</div>
-                <div>:&nbsp;{sap.batchNo}</div>
-                <div>:&nbsp;{sap.productNo}</div>
+              <div className='flex basis-1/2 gap-2'>
+                <div className=''>
+                  <div>Date</div>
+                  <div>Duration</div>
+                </div>
+                <div className=''>
+                  <div>:&nbsp;{formatDateSimple(sap.createdAt)}</div>
+                  <div>:&nbsp;{formatTimeDifference(sap.duration)}</div>
+                </div>
               </div>
             </div>
-            <div className="flex basis-1/2 gap-2">
-              <div className="">
-                <div>Date</div>
-                <div>Duration</div>
-              </div>
-              <div className="">
-                <div>:&nbsp;{formatDateSimple(sap.createdAt)}</div>
-                <div>:&nbsp;{formatTimeDifference(sap.duration)}</div>
-              </div>
+            <br />
+            <div className={styles.tableTest}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>M</th>
+                    <th>Q</th>
+                    <th>P</th>
+                    <th>D</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sap &&
+                    sap !== null &&
+                    props.checkedItems.map(m => (
+                      <tr key={m._id}>
+                        <td>{m.no}</td>
+                        <td>{m.quantity} Kg</td>
+                        <td>{m.packaging}</td>
+                        <td>{formatTimeDifference(m.duration)}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-          <br />
-          <div className={styles.tableTest}>
-            <table>
-              <thead>
-                <tr>
-                  <th>M</th>
-                  <th>Q</th>
-                  <th>P</th>
-                  <th>D</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sap !== null &&
-                  props.checkedItems.map((m) => (
-                    <tr key={m._id}>
-                      <td>{m.no}</td>
-                      <td>{m.quantity} Kg</td>
-                      <td>{m.packaging}</td>
-                      <td>{formatTimeDifference(m.duration)}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
 
-          <br />
-          <br />
-          <div style={{ display: "flex" }}>
-            <div style={{ flexBasis: "50%" }}>
-              <div style={{ textAlign: "center" }}>Weighing by</div>
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <div style={{ textAlign: "center" }}>___________</div>
+            <br />
+            <br />
+            <div style={{ display: "flex" }}>
+              <div style={{ flexBasis: "50%" }}>
+                <div style={{ textAlign: "center" }}>Weighing by</div>
+                <br />
+                <br />
+                <br />
+                <br />
+                <br />
+                <div style={{ textAlign: "center" }}>___________</div>
+              </div>
             </div>
-          </div>
-          {/* <div style={{ textAlign: "center", overflow: "hidden" }}>
+            {/* <div style={{ textAlign: "center", overflow: "hidden" }}>
             -------------------------------------------------------------------------------
           </div> */}
-        </div>
-      )}
+          </div>
+        )}
 
       {material !== null && (
         <>
           <div style={{ fontSize: "14px" }} ref={componentMaterialToPrintRef}>
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <div>
                 <div>Material No</div>
                 <div>Packaging</div>
