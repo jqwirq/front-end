@@ -104,13 +104,20 @@ function Page() {
                 <tbody>
                   {sapList.map(s => (
                     <tr key={s._id} className='border-b border-slate-950'>
-                      <td>{s.no}</td>
-                      <td>{s.batchNo}</td>
-                      <td>{s.productNo}</td>
-                      <td>{formatDateSimple(s.createdAt)}</td>
-                      <td>{formatTimeDifference(s.duration)}</td>
-                      <td>
-                        <Link href={`/sap/${s._id}`}>details</Link>
+                      <td className='py-[6px]'>{s.no}</td>
+                      <td className='py-[6px]'>{s.batchNo}</td>
+                      <td className='py-[6px]'>{s.productNo}</td>
+                      <td className='py-[6px]'>{formatDateSimple(s.createdAt)}</td>
+                      <td className='py-[6px]'>
+                        {formatTimeDifference(s.duration)}
+                      </td>
+                      <td className='py-[6px]'>
+                        <Link
+                          className='text-slate-500 hover:text-slate-700'
+                          href={`/sap/${s._id}`}
+                        >
+                          details
+                        </Link>
                       </td>
                     </tr>
                   ))}
