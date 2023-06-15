@@ -28,7 +28,6 @@ export default function Page() {
     fetch(API_URL + "/products")
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         setProducts(res);
       })
       .catch((err) => {
@@ -40,7 +39,6 @@ export default function Page() {
     fetch(API_URL + "/products")
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         setProducts(res);
       })
       .catch((err) => {
@@ -54,7 +52,6 @@ export default function Page() {
     fetch(API_URL + "/products?no=" + no)
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         setProducts(res);
       })
       .catch((err) => {

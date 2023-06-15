@@ -141,9 +141,9 @@ export default function Page() {
     setIsMaterialNoValid(/^\d*$/.test(materialNo));
   }, [materialNo]);
 
-  useEffect(() => {
-    console.log("materialsNo (useEffect)", materialsNo);
-  }, [materialsNo]);
+  // useEffect(() => {
+  //   console.log("materialsNo (useEffect)", materialsNo);
+  // }, [materialsNo]);
 
   return (
     <>

@@ -26,6 +26,9 @@ export default function Page() {
   const [material, setMaterial] = useState(null);
   const [products, setProducts] = useState([]);
 
+  const [processTimeDifference, setProcessTimeDifference] = useState(0);
+  const [materialTimeDifference, setMaterialTimeDifference] = useState(0);
+
   const [sapNo, setSapNo] = useState("");
   const [batchNo, setBatchNo] = useState("");
   const [productNo, setProductNo] = useState("");
@@ -130,14 +133,15 @@ export default function Page() {
       const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
 
       if (!isToleranced) {
-        fetch("http://127.0.0.1:1880" + "/api/error-signal", {
+        fetch("http://127.0.0.1:1880" + "/api/light-signal", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: "merah",
+          body: JSON.stringify({ signal: "merah" }),
         })
-          .then(() => console.log("fired"))
+          .then(res => res.json())
+          .then(res => console.log(res))
           .catch(err => console.error(err));
       }
     };
@@ -160,16 +164,15 @@ export default function Page() {
         const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
 
         if (!isToleranced) {
-          fetch("http://127.0.0.1:1880" + "/api/error-signal", {
+          fetch("http://127.0.0.1:1880" + "/api/light-signal", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              sinyal: "merah",
-            }),
+            body: JSON.stringify({ signal: "merah" }),
           })
-            .then(() => console.log("fired"))
+            .then(res => res.json())
+            .then(res => console.log(res))
             .catch(err => console.error(err));
         }
       };
@@ -206,8 +209,6 @@ export default function Page() {
         }
       }
 
-      console.log(responseJson);
-
       setMaterial(null);
       setSAP(responseJson.SAP);
       setIsWeighingProcess(true);
@@ -216,9 +217,9 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    // console.log(sap);
-  }, [sap]);
+  // useEffect(() => {
+  //   console.log(sap);
+  // }, [sap]);
 
   const handleStopWeighingProcess = async () => {
     try {
@@ -229,6 +230,7 @@ export default function Page() {
         },
         body: JSON.stringify({
           id: sap._id,
+          endTime: +new Date(),
         }),
       });
       const responseJson = await response.json();
@@ -311,6 +313,7 @@ export default function Page() {
           id: sap._id,
           materialId: material._id,
           quantity: actualQuantity,
+          endTime: Date.now(),
         }),
       });
       const responseJson = await response.json();
@@ -390,7 +393,8 @@ export default function Page() {
     let interval;
     if (isWeighingProcess) {
       interval = setInterval(() => {
-        setProductTime(prevTime => prevTime + 100);
+        const now = Date.now();
+        setProductTime(now - sap.startTime);
       }, 100);
     } else if (!isWeighingProcess) {
       clearInterval(interval);
@@ -406,7 +410,8 @@ export default function Page() {
     let interval;
     if (isMaterialProcess) {
       interval = setInterval(() => {
-        setMaterialTime(prevTime => prevTime + 100);
+        const now = Date.now();
+        setMaterialTime(now - material.startTime);
       }, 100);
     } else if (!isMaterialProcess) {
       clearInterval(interval);
@@ -495,12 +500,20 @@ export default function Page() {
       <div className='bg-slate-100 min-h-screen'>
         <div className='min-h-screen max-h-screen flex flex-col'>
           <div className='bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center'>
-            <Link
-              className='text-xl hover:text-slate-300 active:text-slate-200'
-              href='/'
+            <div
+              className={`text-xl ${
+                !isWeighingProcess
+                  ? "hover:text-slate-300 active:text-slate-200"
+                  : "cursor-default text-slate-600"
+              }`}
             >
-              back
-            </Link>
+              {!isWeighingProcess && (
+                <Link href='/' disabled={isWeighingProcess}>
+                  back
+                </Link>
+              )}
+              {isWeighingProcess && "back"}
+            </div>
 
             <h1 className='tracking-widest font-semibold text-xl'>
               Weighing Process
@@ -859,7 +872,7 @@ function StartButton() {
           }
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
-              ? "bg-green-800 text-neutral-400"
+              ? "bg-green-900 text-neutral-500/80"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
@@ -885,7 +898,7 @@ function StartButton() {
           disabled={isWeighingProcess || isMainInputEmpty()}
           className={`basis-1/2 text-white py-4 ${
             isWeighingProcess || isMainInputEmpty()
-              ? "bg-green-800 text-neutral-400"
+              ? "bg-green-900 text-neutral-500/80"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
