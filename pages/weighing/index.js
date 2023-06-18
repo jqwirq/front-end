@@ -209,7 +209,7 @@ export default function Page() {
       }
 
       setMaterial(null);
-      setSAP(responseJson.SAP);
+      setSAP(responseJson.process);
       setIsWeighingProcess(true);
     } catch (err) {
       err => console.error(err);
