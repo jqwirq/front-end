@@ -44,6 +44,9 @@ export default function Page() {
   const [isMaterialProcess, setIsMaterialProcess] = useState(false);
   const [materialTime, setMaterialTime] = useState(0);
 
+  const [isAlert, setIsAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const sapNoRef = useRef("");
   const batchNoRef = useRef("");
   const productNoRef = useRef("");
@@ -55,6 +58,16 @@ export default function Page() {
 
   const componentSAPToPrintRef = useRef();
   const componentMaterialToPrintRef = useRef();
+
+  const showAlert = message => {
+    setIsAlert(true);
+    setAlertMessage(message);
+  };
+
+  const closeAlert = () => {
+    setIsAlert(false);
+    setAlertMessage("");
+  };
 
   // const handlePrintSAP = () => {
   //   if (sap !== null && sap.isCompleted) {
@@ -122,7 +135,7 @@ export default function Page() {
     ws.current = new WebSocket(url);
 
     ws.current.onopen = () => {
-      console.log(`Connected to WebSocket server at ${url}`);
+      // console.log(`Connected to WebSocket server at ${url}`);
       setIsConnectedToScaleValue(true);
     };
 
@@ -147,11 +160,11 @@ export default function Page() {
     };
 
     ws.current.onerror = error => {
-      console.log(error);
+      console.error(error);
     };
 
     ws.current.onclose = event => {
-      console.log(`Disconnected from WebSocket server at ${url}`);
+      // console.log(`Disconnected from WebSocket server at ${url}`);
     };
   }
 
@@ -301,6 +314,7 @@ export default function Page() {
     try {
       if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
         console.error("Weigh out of tolerance");
+        showAlert("Weigh out of tolerance");
         return;
       }
 
@@ -333,7 +347,7 @@ export default function Page() {
         }
       }
 
-      console.log(responseJson);
+      // console.log(responseJson);
       disconnectWebsocket();
       setMaterial(responseJson.material);
       resetMaterial();
@@ -564,6 +578,23 @@ export default function Page() {
           </div>
         </div>
       </div>
+
+      {isAlert && (
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center'>
+          <div
+            className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-200`}
+          >
+            <div className='text-4xl'>{alertMessage}</div>
+
+            <button
+              onClick={closeAlert}
+              className='text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2'
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </WeighingProcessContext.Provider>
   );
 }
@@ -703,7 +734,7 @@ function PrintSAPComponent() {
                                   />
                                 </td>
                                 <td>{m.no}</td>
-                                <td>{m.quantity} Kg.</td>
+                                <td>{m.quantity} Kg</td>
                                 <td>{m.packaging}</td>
                                 <td>{formatTimeDifference(m.duration)}</td>
                               </tr>
@@ -916,7 +947,7 @@ function ScaleSelectButton() {
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2ton")}
-          className={`basis-1/2 py-2 ${
+          className={`basis-1/2 py-2 border-4 border-slate-600 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-700"
               : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
@@ -928,7 +959,7 @@ function ScaleSelectButton() {
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350tscale")}
-          className={`basis-1/2 py-2 ${
+          className={`basis-1/2 py-2 border-4 border-slate-600 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-700"
               : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
@@ -941,7 +972,7 @@ function ScaleSelectButton() {
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350jic")}
-          className={`basis-1/2 py-2 ${
+          className={`basis-1/2 py-2 border-4 border-slate-600 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-700"
               : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
@@ -953,7 +984,7 @@ function ScaleSelectButton() {
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2kg")}
-          className={`basis-1/2 py-2 ${
+          className={`basis-1/2 py-2 border-4 border-slate-600 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-700"
               : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
@@ -987,6 +1018,7 @@ function FormWeighing() {
     setTargetQty,
     setTolerance,
     isWeighingProcess,
+    isMaterialProcess,
   } = useWeighingContext();
 
   const timeoutRef = useRef(null);
@@ -1018,7 +1050,7 @@ function FormWeighing() {
             if (res) {
               // if res is not undefined
               setProduct(res);
-              console.log("handleProductChange", res);
+              // console.log("handleProductChange", res);
               materialNoRef.current.value = "";
             }
           })
@@ -1043,7 +1075,7 @@ function FormWeighing() {
             const no = sapNoRef.current.value;
             setSapNo(no);
           }}
-          className={`w-[55%] p-1 pl-4 text-2xl ${
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
             isWeighingProcess
               ? "bg-yellow-200 brightness-75 text-neutral-600"
               : "bg-yellow-200"
@@ -1061,7 +1093,7 @@ function FormWeighing() {
             const no = batchNoRef.current.value;
             setBatchNo(no);
           }}
-          className={`w-[55%] p-1 pl-4 text-2xl ${
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
             isWeighingProcess
               ? "bg-yellow-200 brightness-75 text-neutral-600"
               : "bg-yellow-200"
@@ -1076,7 +1108,7 @@ function FormWeighing() {
         <input
           ref={productNoRef}
           onChange={handleProductChange}
-          className={`w-[55%] p-1 pl-4 text-2xl ${
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
             isWeighingProcess
               ? "bg-yellow-200 brightness-75 text-neutral-600"
               : "bg-yellow-200"
@@ -1097,19 +1129,20 @@ function FormWeighing() {
       <div className='flex justify-between items-center'>
         <div>Material No.</div>
         <select
-          className={`w-[55%] p-1 pl-4 text-2xl ${
-            product === null
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
+            isMaterialProcess
               ? "bg-yellow-200 brightness-90"
               : "bg-yellow-200 cursor-pointer"
           }`}
-          disabled={product === null}
+          disabled={isMaterialProcess}
+          defaultValue={""}
           onChange={() => {
             const no = materialNoRef.current.value;
             setMaterialNo(no);
           }}
           ref={materialNoRef}
         >
-          <option value=''></option>
+          <option disabled value=''></option>
           {product !== null &&
             product.materials.map(v => (
               <option key={v._id} value={v.no}>
@@ -1122,8 +1155,13 @@ function FormWeighing() {
       <div className='flex justify-between items-center'>
         <div>Packaging</div>
         <select
+          disabled={isMaterialProcess}
           ref={packagingRef}
-          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl cursor-pointer'
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
+            isMaterialProcess
+              ? "bg-yellow-200 brightness-90"
+              : "bg-yellow-200 cursor-pointer"
+          }`}
           onChange={e => {
             const value = e.target.value;
             setPackaging(value);
@@ -1139,10 +1177,11 @@ function FormWeighing() {
       </div>
 
       <div className='flex justify-between items-center'>
-        <div>Target Qty. (Kg.)</div>
+        <div>Target Qty. (Kg)</div>
         <input
+          disabled={isMaterialProcess}
           ref={targetQtyRef}
-          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl'
+          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300'
           type='number'
           onChange={e => {
             const value = e.target.valueAsNumber;
@@ -1158,8 +1197,9 @@ function FormWeighing() {
       <div className='flex justify-between items-center'>
         <div>Tolerance (%)</div>
         <input
+          disabled={isMaterialProcess}
           ref={toleranceRef}
-          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl'
+          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300'
           type='number'
           onChange={e => {
             const value = e.target.valueAsNumber;
