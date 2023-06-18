@@ -69,26 +69,6 @@ export default function Page() {
     setAlertMessage("");
   };
 
-  // const handlePrintSAP = () => {
-  //   if (sap !== null && sap.isCompleted) {
-  //     const duration = formatTimeDifference(sap.duration);
-  //     console.log(duration);
-  //   } else {
-  //     console.error("error");
-  //   }
-  // };
-
-  // const handlePrintMaterial = () => {
-  //   if (sap !== null && sap.isCompleted) {
-  //     const duration = formatTimeDifference(material.duration);
-  //     console.log(duration);
-  //     // const duration = formatTimeDifference(sap.duration);
-  //     // console.log(duration);
-  //   } else {
-  //     console.error("error");
-  //   }
-  // };
-
   const handlePrintMaterial = useReactToPrint({
     content: () =>
       material !== null && material.isCompleted
@@ -153,7 +133,10 @@ export default function Page() {
           },
           body: JSON.stringify({ signal: "merah" }),
         })
-          .then(res => res.json())
+          .then(res => {
+            showAlert("The weight is out of tolerance!");
+            return res.json();
+          })
           .then(res => console.log(res))
           .catch(err => console.error(err));
       }
@@ -184,7 +167,10 @@ export default function Page() {
             },
             body: JSON.stringify({ signal: "merah" }),
           })
-            .then(res => res.json())
+            .then(res => {
+              showAlert("The weight is out of tolerance!");
+              return res.json();
+            })
             .then(res => console.log(res))
             .catch(err => console.error(err));
         }
@@ -313,8 +299,8 @@ export default function Page() {
   const handleStopMaterialWeighing = async () => {
     try {
       if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
-        console.error("Weigh out of tolerance");
-        showAlert("Weigh out of tolerance");
+        console.error("The weight is out of tolerance!");
+        showAlert("The weight is out of tolerance!");
         return;
       }
 
