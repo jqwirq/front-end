@@ -137,7 +137,10 @@ export default function Page() {
             showAlert("The weight is out of tolerance!");
             return res.json();
           })
-          .then(res => console.log(res))
+          .then(res => {
+            // console.log(res);
+            return;
+          })
           .catch(err => console.error(err));
       }
     };
@@ -171,7 +174,10 @@ export default function Page() {
               showAlert("The weight is out of tolerance!");
               return res.json();
             })
-            .then(res => console.log(res))
+            .then(res => {
+              // console.log(res);
+              return;
+            })
             .catch(err => console.error(err));
         }
       };
@@ -410,13 +416,13 @@ export default function Page() {
         let currentMaterialNo;
         if (storagedWP) {
           let WP = JSON.parse(storagedWP);
-          console.log(WP);
+          // console.log(WP);
           return fetch(API_URL + "/process/" + WP.PID)
             .then(res => {
               return res.json();
             })
             .then(res => {
-              console.log(res);
+              // console.log(res);
               const process = res.process;
               setSAP(process);
 
@@ -476,7 +482,7 @@ export default function Page() {
               }
             })
             .then(() => {
-              console.log(storagedWP);
+              // console.log(storagedWP);
               materialNoRef.current.value = currentMaterialNo;
             });
         }
@@ -873,7 +879,7 @@ function Weight() {
         className={`text-8xl font-bold w-full p-4 text-center ${
           isConnectedToScaleValue
             ? "bg-yellow-200 text-black"
-            : "bg-yellow-300 brightness-50 text-neutral-500"
+            : "bg-yellow-300 brightness-50 text-yellow-100"
         }`}
       >
         {actualQuantity.toFixed(2)} Kg
@@ -917,7 +923,7 @@ function Timers() {
           className={` text-center py-2 px-8 text-7xl ${
             isWeighingProcess
               ? "bg-black text-white"
-              : "bg-neutral-800 text-neutral-400"
+              : "bg-neutral-800 text-neutral-700"
           }`}
         >
           <span>
@@ -933,7 +939,7 @@ function Timers() {
           className={`bg-black text-center py-2 px-8 text-7xl ${
             isMaterialProcess
               ? "bg-black text-white"
-              : "bg-neutral-800 text-neutral-400"
+              : "bg-neutral-800 text-neutral-700"
           }`}
         >
           <span>
@@ -973,7 +979,9 @@ function StartButton() {
         <button
           onClick={handleStopMaterialWeighing}
           className={`basis-1/2 text-white py-4 ${
-            false ? "bg-red-700" : "bg-red-600 hover:bg-red-500 "
+            !isMaterialProcess
+              ? "bg-red-700 text-red-500"
+              : "bg-red-600 hover:bg-red-500 "
           }`}
           // disabled if weight is still out of tolerance
           disabled={false}
@@ -988,7 +996,7 @@ function StartButton() {
           }
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
-              ? "bg-green-900 text-neutral-500/80"
+              ? "bg-green-900 text-green-700"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
@@ -1001,8 +1009,8 @@ function StartButton() {
           onClick={handleStopWeighingProcess}
           className={`basis-1/2 text-white py-4 ${
             isMaterialProcess || isMainInputEmpty()
-              ? "bg-red-700 text-neutral-300"
-              : "bg-red-600 hover:bg-red-500 "
+              ? "bg-red-700 text-red-500"
+              : "bg-red-600 hover:bg-red-500"
           }`}
           disabled={isMaterialProcess}
         >
@@ -1014,7 +1022,7 @@ function StartButton() {
           disabled={isWeighingProcess || isMainInputEmpty()}
           className={`basis-1/2 text-white py-4 ${
             isWeighingProcess || isMainInputEmpty()
-              ? "bg-green-900 text-neutral-500/80"
+              ? "bg-green-900 text-green-700"
               : "bg-green-600 hover:bg-green-500 "
           }`}
         >
@@ -1032,10 +1040,10 @@ function ScaleSelectButton() {
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2ton")}
-          className={`basis-1/2 py-2 border-4 border-slate-600 ${
+          className={`basis-1/2 py-2 ${
             !isMaterialProcess
-              ? "bg-slate-400 text-slate-700"
-              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+              ? "bg-slate-400 text-slate-500"
+              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1044,10 +1052,10 @@ function ScaleSelectButton() {
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350tscale")}
-          className={`basis-1/2 py-2 border-4 border-slate-600 ${
+          className={`basis-1/2 py-2 ${
             !isMaterialProcess
-              ? "bg-slate-400 text-slate-700"
-              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+              ? "bg-slate-400 text-slate-500"
+              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1057,10 +1065,10 @@ function ScaleSelectButton() {
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350jic")}
-          className={`basis-1/2 py-2 border-4 border-slate-600 ${
+          className={`basis-1/2 py-2 ${
             !isMaterialProcess
-              ? "bg-slate-400 text-slate-700"
-              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+              ? "bg-slate-400 text-slate-500"
+              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1069,10 +1077,10 @@ function ScaleSelectButton() {
 
         <button
           onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2kg")}
-          className={`basis-1/2 py-2 border-4 border-slate-600 ${
+          className={`basis-1/2 py-2 ${
             !isMaterialProcess
-              ? "bg-slate-400 text-slate-700"
-              : "cursor-pointer bg-slate-300 hover:brightness-105 active:brightness-90"
+              ? "bg-slate-400 text-slate-500"
+              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >

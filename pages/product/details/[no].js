@@ -33,12 +33,12 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      responseJson,
+      data: responseJson.product,
     },
   };
 }
 
-function YourPage({ responseJson: data }) {
+function YourPage({ data }) {
   const [productNo, setProductNo] = useState("");
   const [materialNo, setMaterialNo] = useState("");
   const [materialsNo, setMaterialsNo] = useState([]);
@@ -180,7 +180,7 @@ function YourPage({ responseJson: data }) {
 
   useEffect(() => {
     const materials = data.materials.map(x => x.no);
-    console.log(materials);
+    // console.log(materials);
     setMaterialsNo(state => {
       return materials;
     });
@@ -197,9 +197,9 @@ function YourPage({ responseJson: data }) {
     setIsMaterialNoValid(/^\d*$/.test(materialNo));
   }, [materialNo]);
 
-  useEffect(() => {
-    console.log("materialsNo (useEffect)", materialsNo);
-  }, [materialsNo]);
+  // useEffect(() => {
+  //   console.log("materialsNo (useEffect)", materialsNo);
+  // }, [materialsNo]);
 
   return (
     <>
