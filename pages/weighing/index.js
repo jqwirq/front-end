@@ -200,14 +200,18 @@ export default function Page() {
       const responseJson = await response.json();
 
       if (!response.ok) {
+        const message = responseJson.message;
         if (response.status === 400) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else if (response.status === 404) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else if (response.status === 409) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else {
           return;
@@ -248,14 +252,18 @@ export default function Page() {
       const responseJson = await response.json();
 
       if (!response.ok) {
+        const message = responseJson.message;
         if (response.status === 400) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else if (response.status === 404) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else if (response.status === 409) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else {
           return;
@@ -290,14 +298,18 @@ export default function Page() {
       const responseJson = await response.json();
 
       if (!response.ok) {
+        const message = responseJson.message;
         if (response.status === 400) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else if (response.status === 404) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else if (response.status === 409) {
-          console.error(responseJson.message);
+          showAlert(message);
+          console.error(message);
           return;
         } else {
           return;
@@ -343,14 +355,18 @@ export default function Page() {
       const responseJson = await response.json();
 
       if (!response.ok) {
+        const message = responseJson.message;
         if (response.status === 400) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else if (response.status === 404) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else if (response.status === 409) {
-          console.error(responseJson.message);
+          showAlert(message);
+          // console.error(message);
           return;
         } else {
           return;
@@ -409,11 +425,12 @@ export default function Page() {
         return res.json();
       })
       .then(res => {
-        setProducts(res);
+        setProducts(res.products);
       })
       .then(() => {
         let storagedWP = localStorage.getItem("WP");
         let currentMaterialNo;
+        let currentMaterialProcess;
         if (storagedWP) {
           let WP = JSON.parse(storagedWP);
           // console.log(WP);
@@ -453,7 +470,11 @@ export default function Page() {
                   setIsMaterialProcess(true);
                 }
                 currentMaterialNo = currentMaterial.no;
-                packagingRef.current.value = currentMaterial.packaging;
+                currentMaterialProcess = currentMaterial.isCompleted;
+                if (!currentMaterialProcess) {
+                  packagingRef.current.value = currentMaterial.packaging;
+                  setPackaging(currentMaterial.packaging);
+                }
               }
 
               return fetch(API_URL + "/product/" + process.productNo);
@@ -477,13 +498,16 @@ export default function Page() {
             .then(res => {
               if (res) {
                 // if res is not undefined
-                setProduct(res);
+                setProduct(res.product);
                 // console.log("handleProductChange", res);
               }
             })
             .then(() => {
               // console.log(storagedWP);
-              materialNoRef.current.value = currentMaterialNo;
+              if (!currentMaterialProcess) {
+                materialNoRef.current.value = currentMaterialNo;
+                setMaterialNo(currentMaterialNo);
+              }
             });
         }
       })
@@ -602,7 +626,11 @@ export default function Page() {
 
   return (
     <WeighingProcessContext.Provider value={value}>
-      <div className='bg-slate-100 min-h-screen'>
+      <div
+        className={`min-h-screen ${
+          isWeighingProcess ? "bg-slate-100" : "bg-slate-200"
+        }`}
+      >
         <div className='min-h-screen max-h-screen flex flex-col'>
           <div className='bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center'>
             <div
@@ -1043,7 +1071,7 @@ function ScaleSelectButton() {
           className={`basis-1/2 py-2 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
+              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1055,7 +1083,7 @@ function ScaleSelectButton() {
           className={`basis-1/2 py-2 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
+              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1068,7 +1096,7 @@ function ScaleSelectButton() {
           className={`basis-1/2 py-2 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
+              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1080,7 +1108,7 @@ function ScaleSelectButton() {
           className={`basis-1/2 py-2 ${
             !isMaterialProcess
               ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-400 hover:brightness-125 active:brightness-90"
+              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
           disabled={!isMaterialProcess}
         >
@@ -1142,7 +1170,7 @@ function FormWeighing() {
           .then(res => {
             if (res) {
               // if res is not undefined
-              setProduct(res);
+              setProduct(res.product);
               // console.log("handleProductChange", res);
               materialNoRef.current.value = "";
             }
@@ -1224,7 +1252,7 @@ function FormWeighing() {
         <select
           className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
             isMaterialProcess
-              ? "bg-yellow-200 brightness-90"
+              ? "bg-yellow-200 brightness-75"
               : "bg-yellow-200 cursor-pointer"
           }`}
           disabled={isMaterialProcess}
@@ -1252,7 +1280,7 @@ function FormWeighing() {
           ref={packagingRef}
           className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
             isMaterialProcess
-              ? "bg-yellow-200 brightness-90"
+              ? "bg-yellow-200 brightness-75"
               : "bg-yellow-200 cursor-pointer"
           }`}
           onChange={e => {
@@ -1274,7 +1302,9 @@ function FormWeighing() {
         <input
           disabled={isMaterialProcess}
           ref={targetQtyRef}
-          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300'
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
+            isMaterialProcess ? "bg-yellow-200 brightness-75" : "bg-yellow-200"
+          }`}
           type='number'
           onChange={e => {
             const value = e.target.valueAsNumber;
@@ -1292,7 +1322,9 @@ function FormWeighing() {
         <input
           disabled={isMaterialProcess}
           ref={toleranceRef}
-          className='w-[55%] bg-yellow-200 p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300'
+          className={`w-[55%] p-1 pl-4 text-2xl outline-none ring-4 ring-yellow-400 focus:ring-yellow-300 ${
+            isMaterialProcess ? "bg-yellow-200 brightness-75" : "bg-yellow-200"
+          }`}
           type='number'
           onChange={e => {
             const value = e.target.valueAsNumber;
