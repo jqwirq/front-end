@@ -143,6 +143,21 @@ export default function Page() {
             return;
           })
           .catch(err => console.error(err));
+      } else if (isToleranced) {
+        fetch("http://127.0.0.1:1880" + "/api/light-signal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ signal: "hijau" }),
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(res => {
+            return;
+          })
+          .catch(err => console.error(err));
       }
     };
 
@@ -177,6 +192,21 @@ export default function Page() {
             })
             .then(res => {
               // console.log(res);
+              return;
+            })
+            .catch(err => console.error(err));
+        } else if (isToleranced) {
+          fetch("http://127.0.0.1:1880" + "/api/light-signal", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ signal: "hijau" }),
+          })
+            .then(res => {
+              return res.json();
+            })
+            .then(res => {
               return;
             })
             .catch(err => console.error(err));
@@ -336,7 +366,7 @@ export default function Page() {
   const handleStopMaterialWeighing = async () => {
     try {
       if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
-        console.error("The weight is out of tolerance!");
+        // console.error("The weight is out of tolerance!");
         showAlert("The weight is out of tolerance!");
         return;
       }
@@ -351,6 +381,8 @@ export default function Page() {
           materialId: material._id,
           quantity: actualQuantity,
           endTime: Date.now(),
+          tolerance,
+          targetQty,
         }),
       });
       const responseJson = await response.json();
@@ -430,6 +462,7 @@ export default function Page() {
       })
       .then(() => {
         let storagedWP = localStorage.getItem("WP");
+        let currentMaterial;
         let currentMaterialNo;
         let currentMaterialProcess;
         if (storagedWP) {
@@ -464,7 +497,7 @@ export default function Page() {
               }
 
               if (process.materials.length !== 0) {
-                const currentMaterial =
+                currentMaterial =
                   process.materials[process.materials.length - 1];
                 setMaterial(currentMaterial);
                 if (!currentMaterial.isCompleted) {
@@ -472,10 +505,6 @@ export default function Page() {
                 }
                 currentMaterialNo = currentMaterial.no;
                 currentMaterialProcess = currentMaterial.isCompleted;
-                if (!currentMaterialProcess) {
-                  packagingRef.current.value = currentMaterial.packaging;
-                  setPackaging(currentMaterial.packaging);
-                }
               }
 
               return fetch(API_URL + "/product/" + process.productNo);
@@ -509,15 +538,21 @@ export default function Page() {
                 materialNoRef.current.value = currentMaterialNo;
                 setMaterialNo(currentMaterialNo);
               }
+              return fetch(API_URL + "/packaging");
+            })
+            .then(res => {
+              return res.json();
+            })
+            .then(res => {
+              setPackages(res.data);
+            })
+            .then(() => {
+              if (!currentMaterialProcess) {
+                packagingRef.current.value = currentMaterial.packaging;
+                setPackaging(currentMaterial.packaging);
+              }
             });
         }
-        return fetch(API_URL + "/packaging");
-      })
-      .then(res => {
-        return res.json();
-      })
-      .then(res => {
-        setPackages(res.data);
       })
       .catch(err => console.error(err));
 
@@ -1368,16 +1403,19 @@ function ComponentSAPToPrint(props, ref) {
             <div
               style={{
                 display: "flex",
-                fontSize: "9px",
+                fontSize: "8px",
                 justifyContent: "space-between",
                 gap: "10px",
               }}
             >
-              <div className='flex basis-1/2 gap-2'>
+              <div
+                className='flex basis-1/2 gap-2'
+                // style={{ fontSize: "8px" }}
+              >
                 <div className=''>
-                  <div>SAP</div>
-                  <div>Batch No</div>
-                  <div>Product No</div>
+                  <div>SAP Order No.</div>
+                  <div>Batch No.</div>
+                  <div>Product No.</div>
                 </div>
                 <div className=''>
                   <div>:&nbsp;{sap.no}</div>
@@ -1385,7 +1423,10 @@ function ComponentSAPToPrint(props, ref) {
                   <div>:&nbsp;{sap.productNo}</div>
                 </div>
               </div>
-              <div className='flex basis-1/2 gap-2'>
+              <div
+                className='flex basis-1/2 gap-2'
+                // style={{ fontSize: "8px" }}
+              >
                 <div className=''>
                   <div>Date</div>
                   <div>Duration</div>
@@ -1448,13 +1489,14 @@ function ComponentSAPToPrint(props, ref) {
               <div>
                 <div>Material No</div>
                 <div>Packaging</div>
+                <div>Quantity</div>
                 <div>Date</div>
                 <div>Duration</div>
               </div>
               <div>
                 <div>: {material.no}</div>
-                {/* <div>: {material.packaging}</div> */}
-                <div>: Botol 250mL-1000mL</div>
+                <div>: {material.packaging}</div>
+                <div>: {material.quantity} Kg</div>
                 <div>: {formatDateSimple(material.startTime)}</div>
                 <div>: {formatTimeDifference(material.duration)}</div>
               </div>
