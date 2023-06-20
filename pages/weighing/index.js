@@ -25,6 +25,7 @@ export default function Page() {
   const [product, setProduct] = useState(null);
   const [material, setMaterial] = useState(null);
   const [products, setProducts] = useState([]);
+  const [packages, setPackages] = useState([]);
 
   const [processTimeDifference, setProcessTimeDifference] = useState(0);
   const [materialTimeDifference, setMaterialTimeDifference] = useState(0);
@@ -510,6 +511,13 @@ export default function Page() {
               }
             });
         }
+        return fetch(API_URL + "/packaging");
+      })
+      .then(res => {
+        return res.json();
+      })
+      .then(res => {
+        setPackages(res.data);
       })
       .catch(err => console.error(err));
 
@@ -574,6 +582,7 @@ export default function Page() {
     product,
     setProduct,
     products,
+    packages,
     material,
     setMaterial,
     isWeighingProcess,
@@ -907,7 +916,7 @@ function Weight() {
         className={`text-8xl font-bold w-full p-4 text-center ${
           isConnectedToScaleValue
             ? "bg-yellow-200 text-black"
-            : "bg-yellow-300 brightness-50 text-yellow-100"
+            : "bg-yellow-300 brightness-50 text-yellow-200"
         }`}
       >
         {actualQuantity.toFixed(2)} Kg
@@ -1006,10 +1015,10 @@ function StartButton() {
       {isMaterialProcess ? (
         <button
           onClick={handleStopMaterialWeighing}
-          className={`basis-1/2 text-white py-4 ${
+          className={`basis-1/2 py-4 ${
             !isMaterialProcess
               ? "bg-red-700 text-red-500"
-              : "bg-red-600 hover:bg-red-500 "
+              : "bg-red-600 hover:bg-red-500 text-white"
           }`}
           // disabled if weight is still out of tolerance
           disabled={false}
@@ -1022,10 +1031,10 @@ function StartButton() {
           disabled={
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
           }
-          className={`basis-1/2 text-white py-4 ${
+          className={`basis-1/2 py-4 ${
             isMaterialProcess || !isWeighingProcess || isMaterialInputEmpty()
-              ? "bg-green-900 text-green-700"
-              : "bg-green-600 hover:bg-green-500 "
+              ? "bg-green-900 text-green-800"
+              : "bg-green-600 hover:bg-green-500 text-white"
           }`}
         >
           Start material
@@ -1035,10 +1044,10 @@ function StartButton() {
       {isWeighingProcess ? (
         <button
           onClick={handleStopWeighingProcess}
-          className={`basis-1/2 text-white py-4 ${
+          className={`basis-1/2 py-4 ${
             isMaterialProcess || isMainInputEmpty()
               ? "bg-red-700 text-red-500"
-              : "bg-red-600 hover:bg-red-500"
+              : "bg-red-600 hover:bg-red-500 text-white"
           }`}
           disabled={isMaterialProcess}
         >
@@ -1048,10 +1057,10 @@ function StartButton() {
         <button
           onClick={handleStartWeighingProcess}
           disabled={isWeighingProcess || isMainInputEmpty()}
-          className={`basis-1/2 text-white py-4 ${
+          className={`basis-1/2 py-4 ${
             isWeighingProcess || isMainInputEmpty()
-              ? "bg-green-900 text-green-700"
-              : "bg-green-600 hover:bg-green-500 "
+              ? "bg-green-900 text-green-800"
+              : "bg-green-600 hover:bg-green-500 text-white"
           }`}
         >
           Start product
@@ -1122,6 +1131,7 @@ function ScaleSelectButton() {
 function FormWeighing() {
   const {
     products,
+    packages,
     product,
     setProduct,
     sapNoRef,
@@ -1289,11 +1299,12 @@ function FormWeighing() {
           }}
         >
           <option value=''></option>
-          <option value='Sak'>Sak</option>
-          <option value='Pail'>Pail</option>
-          <option value='Drum'>Drum</option>
-          <option value='IBC'>IBC</option>
-          <option value='Botol 250mL-1000mL'>Botol 250mL-1000mL</option>
+          {packages.length !== 0 &&
+            packages.map(v => (
+              <option key={v._id} value={v.type}>
+                {v.type}
+              </option>
+            ))}
         </select>
       </div>
 
