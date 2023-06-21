@@ -82,7 +82,7 @@ export default function Page() {
               <label className='text-lg'>Search by product no.</label>
               <input
                 ref={productNoRef}
-                className='py-1 px-2 w-60'
+                className='py-1 px-2 w-60 text-base border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 type='text'
               />
             </form>
