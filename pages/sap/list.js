@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const DATA_LIMIT = 2;
+const DATA_LIMIT = 10;
 
 function Page() {
   const [sapList, setSapList] = useState([]);
@@ -81,9 +81,9 @@ function Page() {
           </Link>
         </div>
 
-        <h1 className='text-5xl text-center pt-4'>SAP List</h1>
+        <h1 className='text-5xl text-center pt-6'>SAP List</h1>
 
-        <div className='flex px-6 mt-6'>
+        <div className='flex px-6 mt-8'>
           <form
             onSubmit={handleSearchSubmit}
             className='basis-full flex text-lg justify-around'
@@ -119,7 +119,7 @@ function Page() {
             </button>
           </form>
         </div>
-        <div className='flex flex-col mt-8 grow gap-6 px-2 md:px-[4%]'>
+        <div className='flex flex-col mt-10 grow gap-6 px-2 md:px-[4%]'>
           <div>
             {sapList.length === 0 && (
               <div className='text-center mt-40 text-slate-400 text-3xl'>
@@ -139,6 +139,7 @@ function Page() {
                       <th>Action</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {sapList.map(s => (
                       <tr key={s._id} className='border-b border-slate-950'>
@@ -168,7 +169,7 @@ function Page() {
           </div>
 
           {sapList.length !== 0 && (
-            <div className='text-lg flex justify-center gap-4'>
+            <div className='text-lg flex justify-center gap-4 mt-4'>
               {pageNumbers.map(number => (
                 <PageButton
                   key={number}
