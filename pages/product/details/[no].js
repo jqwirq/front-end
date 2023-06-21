@@ -115,13 +115,13 @@ function YourPage({ data }) {
     e.preventDefault();
 
     const password = e.target[0].value;
-    if (password !== "test123") {
-      closeModal();
-      openModal(0, "Wrong password!");
-      return;
-    } else {
-      closeModal();
-    }
+    // if (password !== "test123") {
+    //   closeModal();
+    //   openModal(0, "Wrong password!");
+    //   return;
+    // } else {
+    //   closeModal();
+    // }
 
     if (productNo === "") {
       openModal(0, "Please input product number is empty!");
@@ -158,6 +158,7 @@ function YourPage({ data }) {
         body: JSON.stringify({
           productNo,
           materialsNo,
+          password,
         }),
       });
 

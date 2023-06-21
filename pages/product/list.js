@@ -141,7 +141,7 @@ export default function Page() {
                             </svg>
                           </Link>
 
-                          <TombolTolol id={v._id} getProducts={getProducts} />
+                          <TombolDelete id={v._id} getProducts={getProducts} />
                         </div>
                       </td>
                     </tr>
@@ -167,7 +167,7 @@ export default function Page() {
   );
 }
 
-function TombolTolol({ id, getProducts }) {
+function TombolDelete({ id, getProducts }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
@@ -182,22 +182,26 @@ function TombolTolol({ id, getProducts }) {
     e.preventDefault();
 
     const password = e.target[0].value;
-    if (password !== "test123") {
-      closeModal();
-      alert("Wrong password!");
-      return;
-    }
+    // if (password !== "test123") {
+    //   closeModal();
+    //   alert("Wrong password!");
+    //   return;
+    // }
 
     try {
-      const response = await fetch(API_URL + "/product/" + id, {
-        method: "DELETE",
+      const response = await fetch(API_URL + "/delete-product/" + id, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
       });
 
       if (!response.ok) {
         if (response.status === 400) {
-          // const responseJson = await response.json();
+          const responseJson = await response.json();
           // openModal(0, responseJson.message);
-          alert("Something wrong");
+          alert(responseJson.message);
           return;
         }
       }

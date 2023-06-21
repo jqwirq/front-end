@@ -27,9 +27,6 @@ export default function Page() {
   const [products, setProducts] = useState([]);
   const [packages, setPackages] = useState([]);
 
-  const [processTimeDifference, setProcessTimeDifference] = useState(0);
-  const [materialTimeDifference, setMaterialTimeDifference] = useState(0);
-
   const [sapNo, setSapNo] = useState("");
   const [batchNo, setBatchNo] = useState("");
   const [productNo, setProductNo] = useState("");
@@ -551,6 +548,14 @@ export default function Page() {
                 packagingRef.current.value = currentMaterial.packaging;
                 setPackaging(currentMaterial.packaging);
               }
+            });
+        } else {
+          return fetch(API_URL + "/packaging")
+            .then(res => {
+              return res.json();
+            })
+            .then(res => {
+              setPackages(res.data);
             });
         }
       })
