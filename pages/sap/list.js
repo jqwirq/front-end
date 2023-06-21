@@ -88,25 +88,30 @@ function Page() {
             onSubmit={handleSearchSubmit}
             className='basis-full flex text-lg justify-around'
           >
-            <div className='flex gap-4'>
-              <div>No. :</div>
-              <input type='text' />
+            <div className='flex items-center gap-4'>
+              <div className='text-xl'>No. :</div>
+              <input
+                type='text'
+                className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
+              />
             </div>
             {/* <div className="flex gap-4">
                 <div>Batch No. :</div>
                 <input type="text" />
               </div> */}
-            <div className='flex gap-2'>
+            <div className='flex items-center gap-2'>
               <input
                 onChange={e => {
                   const value = e.target.value;
                   setStartDate(value);
                 }}
+                className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 type='date'
               />
-              <div>to</div>
+              <div className='text-xl'>to</div>
               <input
                 type='date'
+                className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 onChange={e => {
                   const value = e.target.value;
                   setEndDate(value);

@@ -39,7 +39,7 @@ export default function Page({ responseJson }) {
 
       {responseJson?.sap && (
         <>
-          <div className='text-2xl grow flexpt-8 px-12'>
+          <div className='text-xl grow flexpt-8 px-12'>
             <div className='flex justify-around pt-8'>
               <div className='flex gap-8'>
                 <div className='flex flex-col gap-2'>
