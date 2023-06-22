@@ -788,7 +788,7 @@ export default function Page() {
 
             <StartButton />
 
-            <div className='col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-2 text-base px-2'>
+            <div className='col-start-7 col-end-13 row-start-4 row-end-5 flex justify-around items-center gap-6 text-base px-6'>
               <button
                 className={`basis-1/2 py-4 text-sm ${
                   !material || material === null || !material.isCompleted
@@ -806,7 +806,21 @@ export default function Page() {
                   !material || material === null || !material.isCompleted
                 }
               >
-                Print material receipt
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  strokeWidth={1.5}
+                  stroke='currentColor'
+                  className='w-6 h-6 inline-block'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z'
+                  />
+                </svg>
+                &nbsp;Material
               </button>
 
               <PrintSAPComponent />
@@ -901,7 +915,21 @@ function PrintSAPComponent() {
         }}
         disabled={!sap || sap === null || !sap.isCompleted}
       >
-        Print sap receipt
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 24 24'
+          strokeWidth={1.5}
+          stroke='currentColor'
+          className='w-6 h-6 inline-block'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            d='M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z'
+          />
+        </svg>
+        &nbsp;SAP
       </button>
 
       {isOpen && (
@@ -1017,23 +1045,36 @@ function PrintSAPComponent() {
 }
 
 function Weight() {
-  const { actualQuantity, isConnectedToScaleValue, targetQty, tolerance } =
-    useWeighingContext();
+  const {
+    actualQuantity,
+    isConnectedToScaleValue,
+    targetQty,
+    tolerance,
+    isMaterialProcess,
+  } = useWeighingContext();
+
+  console.log("isMaterialProcess", isMaterialProcess);
 
   return (
-    <div className='col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center px-2 gap-4'>
+    <div className='col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4'>
       <div
         className={`text-8xl font-bold w-full p-4 text-center ${
           isConnectedToScaleValue
-            ? "bg-yellow-200 text-black"
-            : "bg-yellow-300 brightness-50 text-yellow-200"
+            ? "bg-green-400 text-black"
+            : "bg-green-600 brightness-50 text-green-500"
         }`}
       >
         {actualQuantity.toFixed(2)} Kg
       </div>
 
-      <div className='flex justify-center text-3xl text-center gap-4 w-full'>
-        <div className='bg-slate-500 text-slate-50 basis-1/2 py-2 px-4'>
+      <div className='flex justify-center text-3xl text-center gap-6 px-2 w-full'>
+        <div
+          className={`basis-1/2 py-2 px-4 ${
+            !isMaterialProcess
+              ? "bg-red-900 text-red-800"
+              : "bg-red-700 text-white"
+          }`}
+        >
           {/* {isConnectedToScaleValue
             ? "- " +
               (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
@@ -1043,7 +1084,13 @@ function Weight() {
             (targetQty - targetQty * (tolerance / 100)).toFixed(2) +
             " Kg"}
         </div>
-        <div className='bg-slate-500 text-slate-50 basis-1/2 py-2 px-4'>
+        <div
+          className={`basis-1/2 py-2 px-4 ${
+            !isMaterialProcess
+              ? "bg-red-900 text-red-800"
+              : "bg-red-700 text-white"
+          }`}
+        >
           {/* {isConnectedToScaleValue
             ? "+ " +
               (targetQty + targetQty * (tolerance / 100)).toFixed(2) +
@@ -1065,7 +1112,23 @@ function Timers() {
   return (
     <div className='col-start-7 col-end-13 row-start-1 row-end-3 flex flex-col justify-center items-center gap-2'>
       <div className='flex flex-col items-center'>
-        <div className='text-lg'>Total Weighing Time</div>
+        <div className='text-base mb-2 flex items-center gap-2'>
+          <div>Weighing Process</div>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 24 24'
+            strokeWidth={1.5}
+            stroke='currentColor'
+            className='w-6 h-6 inline-block'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
+          </svg>
+        </div>
         <div
           className={` text-center py-2 px-8 text-7xl ${
             isWeighingProcess
@@ -1084,7 +1147,23 @@ function Timers() {
       </div>
 
       <div className='flex flex-col items-center'>
-        <div className='text-lg'>Material Weighing Time</div>
+        <div className='text-base mb-2 flex items-center gap-2'>
+          <div>Material Weighing</div>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 24 24'
+            strokeWidth={1.5}
+            stroke='currentColor'
+            className='w-6 h-6 inline-block'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
+          </svg>
+        </div>
         <div
           className={`bg-black text-center py-2 px-8 text-7xl ${
             isMaterialProcess
@@ -1141,7 +1220,23 @@ function StartButton() {
             // disabled if weight is still out of tolerance
             disabled={false}
           >
-            Stop material
+            <div className='flex items-center justify-center gap-2'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth={1.5}
+                stroke='currentColor'
+                className='w-6 h-6'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z'
+                />
+              </svg>
+              <div>Process</div>
+            </div>
           </button>
           <button
             onClick={handleCancelWeighing}
@@ -1179,7 +1274,23 @@ function StartButton() {
               : "bg-green-600 hover:bg-green-500 text-white"
           }`}
         >
-          Start material
+          <div className='flex items-center justify-center gap-2'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-6 h-6 inline-block'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z'
+              />
+            </svg>
+            <div>Weighing</div>
+          </div>
         </button>
       )}
 
@@ -1193,7 +1304,23 @@ function StartButton() {
           }`}
           disabled={isMaterialProcess}
         >
-          Stop product
+          <div className='flex items-center justify-center gap-2'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-6 h-6'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z'
+              />
+            </svg>
+            <div>Process</div>
+          </div>
         </button>
       ) : (
         <button
@@ -1205,7 +1332,23 @@ function StartButton() {
               : "bg-green-600 hover:bg-green-500 text-white"
           }`}
         >
-          Start product
+          <div className='flex items-center justify-center gap-2'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-6 h-6'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z'
+              />
+            </svg>
+            <div>Process</div>
+          </div>
         </button>
       )}
     </div>
@@ -1339,7 +1482,7 @@ function FormWeighing() {
   };
 
   return (
-    <div className='col-span-6 row-span-4 flex flex-col gap-4 text-xl justify-center'>
+    <div className='col-span-6 row-span-4 flex flex-col gap-[22px] text-xl justify-center'>
       <div className='flex justify-between items-center'>
         <div>SAP Order No.</div>
         <input
@@ -1649,13 +1792,29 @@ function formatTimeDifference(duration) {
 
 function formatDate(timestamp) {
   const date = new Date(timestamp);
-  const options = {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const day = weekdays[date.getUTCDay()];
+  const dateNumber =
+    date.getUTCDate() < 10 ? "0" + date.getUTCDate() : date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+
+  return `${day}, ${dateNumber} ${month} ${year}`;
 }
 
 function formatDateSimple(timestamp) {
