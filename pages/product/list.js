@@ -241,7 +241,7 @@ function TombolDelete({ id, getProducts }) {
       </button>
 
       {isModalOpen && (
-        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center'>
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center z-10'>
           <form
             onSubmit={e => handleDeleteSubmit(e, id)}
             className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-100`}

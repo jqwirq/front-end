@@ -205,7 +205,7 @@ function FeedbackModal({ message, closeModal, modalType }) {
   }
 
   return (
-    <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center">
+    <div className="bg-slate-900/50 fixed inset-0 flex justify-center items-center z-10">
       <div
         className={`p-6 max-w-[80%] flex flex-col items-center gap-8 ${bgColor}`}
       >
