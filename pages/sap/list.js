@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const DATA_LIMIT = 10;
+const DATA_LIMIT = 1;
 
 function Page() {
   const [sapList, setSapList] = useState([]);
@@ -17,8 +17,8 @@ function Page() {
     e.preventDefault();
 
     const no = e.target[0].value;
-    const start = e.target[1].value;
-    const end = e.target[2].value;
+    const start = e.target[1].valueAsDate?.toISOString() || "";
+    const end = e.target[2].valueAsDate?.toISOString() || "";
 
     setNoQuery(no);
     setStartDate(start);
@@ -41,19 +41,19 @@ function Page() {
     )
       .then(res => res.json())
       .then(res => {
-        console.log(res);
         setSapList(res.data);
         const newTotalPages = Math.ceil(res.total / DATA_LIMIT);
         setTotalPages(newTotalPages);
 
         const newPageNumbers = [];
-        for (
-          let i = Math.max(1, page - 2);
-          i <= Math.min(page + 2, newTotalPages);
-          i++
-        ) {
+        let leftBound = Math.max(page - 2, 1);
+        let rightBound = Math.min(leftBound + 4, newTotalPages);
+        leftBound = Math.max(rightBound - 4, 1);
+
+        for (let i = leftBound; i <= rightBound; i++) {
           newPageNumbers.push(i);
         }
+
         setPageNumbers(newPageNumbers);
       })
       .catch(err => {
@@ -102,7 +102,7 @@ function Page() {
             <div className='flex items-center gap-2'>
               <input
                 onChange={e => {
-                  const value = e.target.value;
+                  const value = e.target.valueAsDate.toISOString();
                   setStartDate(value);
                 }}
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
@@ -113,7 +113,7 @@ function Page() {
                 type='date'
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 onChange={e => {
-                  const value = e.target.value;
+                  const value = e.target.valueAsDate.toISOString();
                   setEndDate(value);
                 }}
               />
@@ -175,6 +175,12 @@ function Page() {
 
           {sapList.length !== 0 && (
             <div className='text-lg flex justify-center gap-4 mt-4'>
+              {currentPage > 1 && (
+                <button onClick={() => setCurrentPage(currentPage - 1)}>
+                  &lt;
+                </button>
+              )}
+
               {pageNumbers.map(number => (
                 <PageButton
                   key={number}
@@ -185,6 +191,12 @@ function Page() {
                   }}
                 />
               ))}
+
+              {currentPage < totalPages && (
+                <button onClick={() => setCurrentPage(currentPage + 1)}>
+                  &gt;
+                </button>
+              )}
             </div>
           )}
         </div>
