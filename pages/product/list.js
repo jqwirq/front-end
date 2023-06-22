@@ -73,7 +73,7 @@ export default function Page() {
 
         <h1 className='text-5xl text-center pt-4'>Product List</h1>
 
-        <div className='grow flex flex-col gap-8 pt-6 md:px-[8%] lg:px-[10%]'>
+        <div className='grow flex flex-col gap-6 pt-10 md:px-[8%] lg:px-[10%]'>
           <div className='flex'>
             <form
               onSubmit={handleSearchProductSubmit}
