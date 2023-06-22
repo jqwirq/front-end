@@ -73,21 +73,21 @@ export default function Page() {
 
         <h1 className='text-5xl text-center pt-4'>Product List</h1>
 
-        <div className='grow flex flex-col gap-6 pt-10 md:px-[8%] lg:px-[10%]'>
-          <div className='flex'>
-            <form
-              onSubmit={handleSearchProductSubmit}
-              className='flex items-center gap-6'
-            >
-              <label className='text-lg'>Search by product no.</label>
-              <input
-                ref={productNoRef}
-                className='py-1 px-2 w-60 text-base border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
-                type='text'
-              />
-            </form>
-          </div>
+        <div className='flex mt-8 mb-4 md:px-[8%] lg:px-[10%]'>
+          <form
+            onSubmit={handleSearchProductSubmit}
+            className='flex items-center gap-6'
+          >
+            <label className='text-lg'>Search by product no.</label>
+            <input
+              ref={productNoRef}
+              className='py-1 px-2 w-60 text-base border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
+              type='text'
+            />
+          </form>
+        </div>
 
+        <div className='grow flex flex-col gap-6 md:px-[8%] lg:px-[10%]'>
           {products.length === 0 && (
             <div className='text-center grow text-slate-400'>empty</div>
           )}
