@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const DATA_LIMIT = 1;
+const DATA_LIMIT = 3;
 
 function Page() {
   const [sapList, setSapList] = useState([]);
@@ -103,6 +103,7 @@ function Page() {
               <input
                 onChange={e => {
                   const value = e.target.valueAsDate.toISOString();
+                  setCurrentPage(1);
                   setStartDate(value);
                 }}
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
@@ -114,6 +115,7 @@ function Page() {
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 onChange={e => {
                   const value = e.target.valueAsDate.toISOString();
+                  setCurrentPage(1);
                   setEndDate(value);
                 }}
               />

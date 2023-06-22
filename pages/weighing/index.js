@@ -312,6 +312,25 @@ export default function Page() {
 
   const handleStartMaterialWeighing = async () => {
     try {
+      if (targetQty === 0) {
+        showAlert("Target quantity can't be 0");
+        return;
+      } else if (targetQty < 0) {
+        showAlert("Target quantity can't be less than 0");
+        return;
+      } else if (targetQty > 100000) {
+        showAlert("You are exceeding max number for target quantity");
+        return;
+      }
+
+      if (tolerance < 0) {
+        showAlert("Tolerance can't be less than 0");
+        return;
+      } else if (tolerance > 1000) {
+        showAlert("You are exceeding max number for tolerance");
+        return;
+      }
+
       const response = await fetch(API_URL + "/material-weighing/start", {
         method: "POST",
         headers: {
@@ -1003,6 +1022,9 @@ function Timers() {
               : "bg-neutral-800 text-neutral-700"
           }`}
         >
+          {productTime >= 3600000 && (
+            <span>{("0" + Math.floor(productTime / 3600000)).slice(-2)}:</span>
+          )}
           <span>
             {("0" + Math.floor((productTime / 60000) % 60)).slice(-2)}:
           </span>
@@ -1019,6 +1041,9 @@ function Timers() {
               : "bg-neutral-800 text-neutral-700"
           }`}
         >
+          {materialTime >= 3600000 && (
+            <span>{("0" + Math.floor(materialTime / 3600000)).slice(-2)}:</span>
+          )}
           <span>
             {("0" + Math.floor((materialTime / 60000) % 60)).slice(-2)}:
           </span>
