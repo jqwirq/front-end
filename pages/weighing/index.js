@@ -168,10 +168,42 @@ export default function Page() {
             });
           })
           .then(res => {
-            return res.json();
-          })
-          .then(res => {
-            console.log(res.status);
+            if (!res.ok) {
+              return res.json().then(res => {
+                const message = res.message;
+                if (response.status === 400) {
+                  showAlert(message);
+                  // console.error(message);
+                  return;
+                } else if (response.status === 404) {
+                  showAlert(message);
+                  // console.error(message);
+                  return;
+                } else if (response.status === 409) {
+                  showAlert(message);
+                  // console.error(message);
+                  return;
+                } else {
+                  return;
+                }
+              });
+            } else {
+              return res.json().then(res => {
+                localStorage.setItem(
+                  "WP",
+                  JSON.stringify({
+                    PID: sap._id,
+                  })
+                );
+
+                disconnectWebsocket();
+                setMaterial(response.material);
+                resetMaterial();
+                setIsMaterialProcess(false);
+                setMaterialTime(0);
+                setActualQuantity(0);
+              });
+            }
           })
           .catch(err => console.error(err));
       }
@@ -239,10 +271,42 @@ export default function Page() {
               });
             })
             .then(res => {
-              return res.json();
-            })
-            .then(res => {
-              console.log(res.status);
+              if (!res.ok) {
+                return res.json().then(res => {
+                  const message = res.message;
+                  if (response.status === 400) {
+                    showAlert(message);
+                    // console.error(message);
+                    return;
+                  } else if (response.status === 404) {
+                    showAlert(message);
+                    // console.error(message);
+                    return;
+                  } else if (response.status === 409) {
+                    showAlert(message);
+                    // console.error(message);
+                    return;
+                  } else {
+                    return;
+                  }
+                });
+              } else {
+                return res.json().then(res => {
+                  localStorage.setItem(
+                    "WP",
+                    JSON.stringify({
+                      PID: sap._id,
+                    })
+                  );
+
+                  disconnectWebsocket();
+                  setMaterial(response.material);
+                  resetMaterial();
+                  setIsMaterialProcess(false);
+                  setMaterialTime(0);
+                  setActualQuantity(0);
+                });
+              }
             })
             .catch(err => console.error(err));
         }
