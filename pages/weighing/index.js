@@ -381,7 +381,7 @@ export default function Page() {
     }
   };
 
-  const handleStopMaterialWeighing = async () => {
+  async function handleStopMaterialWeighing() {
     try {
       if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
         // console.error("The weight is out of tolerance!");
@@ -440,7 +440,7 @@ export default function Page() {
     } catch (error) {
       console.error(error);
     }
-  };
+  }
 
   const handleCancelWeighing = async () => {
     try {
