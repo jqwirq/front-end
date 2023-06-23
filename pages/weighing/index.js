@@ -197,7 +197,7 @@ export default function Page() {
                 );
 
                 disconnectWebsocket();
-                setMaterial(response.material);
+                setMaterial(res.material);
                 resetMaterial();
                 setIsMaterialProcess(false);
                 setMaterialTime(0);
@@ -300,7 +300,7 @@ export default function Page() {
                   );
 
                   disconnectWebsocket();
-                  setMaterial(response.material);
+                  setMaterial(res.material);
                   resetMaterial();
                   setIsMaterialProcess(false);
                   setMaterialTime(0);
