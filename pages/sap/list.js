@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const DATA_LIMIT = 3;
+const DATA_LIMIT = 10;
 
 function Page() {
   const [sapList, setSapList] = useState([]);
