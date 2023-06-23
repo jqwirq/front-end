@@ -604,19 +604,19 @@ export default function Page() {
                 materialNoRef.current.value = currentMaterialNo;
                 setMaterialNo(currentMaterialNo);
               }
-              return fetch(API_URL + "/packaging");
-            })
-            .then(res => {
-              return res.json();
-            })
-            .then(res => {
-              setPackages(res.data);
             })
             .then(() => {
-              if (!currentMaterialProcess) {
-                packagingRef.current.value = currentMaterial.packaging;
-                setPackaging(currentMaterial.packaging);
-              }
+              return fetch(API_URL + "/packaging")
+                .then(res => {
+                  return res.json();
+                })
+                .then(res => {
+                  setPackages(res.data);
+                  if (!currentMaterialProcess) {
+                    packagingRef.current.value = currentMaterial.packaging;
+                    setPackaging(currentMaterial.packaging);
+                  }
+                });
             });
         } else {
           return fetch(API_URL + "/packaging")
@@ -1052,8 +1052,6 @@ function Weight() {
     tolerance,
     isMaterialProcess,
   } = useWeighingContext();
-
-  console.log("isMaterialProcess", isMaterialProcess);
 
   return (
     <div className='col-start-5 col-end-13 row-start-5 row-end-7 flex flex-col justify-center items-center gap-4'>
