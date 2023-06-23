@@ -1130,10 +1130,10 @@ function StartButton() {
   return (
     <div className='px-2 col-start-7 col-end-13 row-start-3 row-end-4 flex justify-center items-center gap-4 text-xl'>
       {isMaterialProcess ? (
-        <>
+        <div className='flex items-center basis-1/2 gap-2'>
           <button
             onClick={handleStopMaterialWeighing}
-            className={`basis-1/2 py-4 ${
+            className={`basis-1/2 grow py-4 ${
               !isMaterialProcess
                 ? "bg-red-700 text-red-500"
                 : "bg-red-600 hover:bg-red-500 text-white"
@@ -1143,8 +1143,30 @@ function StartButton() {
           >
             Stop material
           </button>
-          <button onClick={handleCancelWeighing}>cancel</button>
-        </>
+          <button
+            onClick={handleCancelWeighing}
+            className={`${
+              !isMaterialProcess
+                ? "bg-yellow-700 text-yellow-500"
+                : "bg-yellow-600 hover:bg-yellow-500 text-white rounded-full"
+            }`}
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='w-8 h-8'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
+          </button>
+        </div>
       ) : (
         <button
           onClick={handleStartMaterialWeighing}
