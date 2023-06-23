@@ -152,8 +152,26 @@ export default function Page() {
             return res.json();
           })
           .then(res => {
-            handleStopMaterialWeighing();
-            return;
+            return fetch(API_URL + "/material-weighing/stop", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id: sap._id,
+                materialId: material._id,
+                quantity: actualQuantity,
+                endTime: Date.now(),
+                tolerance,
+                targetQty,
+              }),
+            });
+          })
+          .then(res => {
+            return res.json();
+          })
+          .then(res => {
+            console.log(res.status);
           })
           .catch(err => console.error(err));
       }
