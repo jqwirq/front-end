@@ -440,6 +440,56 @@ export default function Page() {
     }
   };
 
+  const handleCancelWeighing = async () => {
+    try {
+      const response = await fetch(API_URL + "/material-weighing/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: sap._id,
+          materialId: material._id,
+        }),
+      });
+      const responseJson = await response.json();
+
+      if (!response.ok) {
+        const message = responseJson.message;
+        if (response.status === 400) {
+          showAlert(message);
+          // console.error(message);
+          return;
+        } else if (response.status === 404) {
+          showAlert(message);
+          // console.error(message);
+          return;
+        } else if (response.status === 409) {
+          showAlert(message);
+          // console.error(message);
+          return;
+        } else {
+          return;
+        }
+      }
+
+      localStorage.setItem(
+        "WP",
+        JSON.stringify({
+          PID: sap._id,
+        })
+      );
+
+      disconnectWebsocket();
+      resetMaterial();
+      setIsMaterialProcess(false);
+      setMaterialTime(0);
+      setActualQuantity(0);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const resetMain = () => {
     sapNoRef.current.value = "";
     setSapNo("");
@@ -683,6 +733,7 @@ export default function Page() {
     handleStopWeighingProcess,
     handleStartMaterialWeighing,
     handleStopMaterialWeighing,
+    handleCancelWeighing,
     isConnectedToScaleValue,
     setIsConnectedToScaleValue,
     connectWebSocket,
@@ -1073,23 +1124,27 @@ function StartButton() {
     handleStopWeighingProcess,
     handleStartMaterialWeighing,
     handleStopMaterialWeighing,
+    handleCancelWeighing,
   } = useWeighingContext();
 
   return (
     <div className='px-2 col-start-7 col-end-13 row-start-3 row-end-4 flex justify-center items-center gap-4 text-xl'>
       {isMaterialProcess ? (
-        <button
-          onClick={handleStopMaterialWeighing}
-          className={`basis-1/2 py-4 ${
-            !isMaterialProcess
-              ? "bg-red-700 text-red-500"
-              : "bg-red-600 hover:bg-red-500 text-white"
-          }`}
-          // disabled if weight is still out of tolerance
-          disabled={false}
-        >
-          Stop material
-        </button>
+        <>
+          <button
+            onClick={handleStopMaterialWeighing}
+            className={`basis-1/2 py-4 ${
+              !isMaterialProcess
+                ? "bg-red-700 text-red-500"
+                : "bg-red-600 hover:bg-red-500 text-white"
+            }`}
+            // disabled if weight is still out of tolerance
+            disabled={false}
+          >
+            Stop material
+          </button>
+          <button onClick={handleCancelWeighing}>cancel</button>
+        </>
       ) : (
         <button
           onClick={handleStartMaterialWeighing}
