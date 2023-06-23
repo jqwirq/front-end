@@ -152,6 +152,7 @@ export default function Page() {
             return res.json();
           })
           .then(res => {
+            handleStopMaterialWeighing();
             return;
           })
           .catch(err => console.error(err));
@@ -204,6 +205,7 @@ export default function Page() {
               return res.json();
             })
             .then(res => {
+              handleStopMaterialWeighing();
               return;
             })
             .catch(err => console.error(err));
