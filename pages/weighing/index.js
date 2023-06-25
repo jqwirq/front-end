@@ -148,12 +148,58 @@ export default function Page() {
           },
           body: JSON.stringify({ signal: "hijau" }),
         })
+          .then(res => res.json())
           .then(res => {
-            return res.json();
-          })
-          .then(res => {
-            handleStopMaterialWeighing();
-            return;
+            // Placed the body of handleStopMaterialWeighing function here
+            fetch(API_URL + "/material-weighing/stop", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id: sap._id,
+                materialId: material._id,
+                quantity: qty,
+                endTime: Date.now(),
+                tolerance,
+                targetQty,
+              }),
+            })
+              .then(response => {
+                if (!response.ok) {
+                  return response.json().then(responseJson => {
+                    const message = responseJson.message;
+                    if (
+                      response.status === 400 ||
+                      response.status === 404 ||
+                      response.status === 409
+                    ) {
+                      showAlert(message);
+                      return;
+                    } else {
+                      return;
+                    }
+                  });
+                }
+
+                return response.json().then(responseJson => {
+                  localStorage.setItem(
+                    "WP",
+                    JSON.stringify({
+                      PID: sap._id,
+                    })
+                  );
+
+                  console.log("fired");
+                  disconnectWebsocket();
+                  setMaterial(responseJson.material);
+                  resetMaterial();
+                  setIsMaterialProcess(false);
+                  setMaterialTime(0);
+                  setActualQuantity(0);
+                });
+              })
+              .catch(error => console.error(error));
           })
           .catch(err => console.error(err));
       }
@@ -201,12 +247,58 @@ export default function Page() {
             },
             body: JSON.stringify({ signal: "hijau" }),
           })
+            .then(res => res.json())
             .then(res => {
-              return res.json();
-            })
-            .then(res => {
-              handleStopMaterialWeighing();
-              return;
+              // Placed the body of handleStopMaterialWeighing function here
+              fetch(API_URL + "/material-weighing/stop", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  id: sap._id,
+                  materialId: material._id,
+                  quantity: qty,
+                  endTime: Date.now(),
+                  tolerance,
+                  targetQty,
+                }),
+              })
+                .then(response => {
+                  if (!response.ok) {
+                    return response.json().then(responseJson => {
+                      const message = responseJson.message;
+                      if (
+                        response.status === 400 ||
+                        response.status === 404 ||
+                        response.status === 409
+                      ) {
+                        showAlert(message);
+                        return;
+                      } else {
+                        return;
+                      }
+                    });
+                  }
+
+                  return response.json().then(responseJson => {
+                    localStorage.setItem(
+                      "WP",
+                      JSON.stringify({
+                        PID: sap._id,
+                      })
+                    );
+
+                    console.log("fired");
+                    disconnectWebsocket();
+                    setMaterial(responseJson.material);
+                    resetMaterial();
+                    setIsMaterialProcess(false);
+                    setMaterialTime(0);
+                    setActualQuantity(0);
+                  });
+                })
+                .catch(error => console.error(error));
             })
             .catch(err => console.error(err));
         }
@@ -383,12 +475,6 @@ export default function Page() {
 
   async function handleStopMaterialWeighing() {
     try {
-      if (!isQuantityToleranced(tolerance, targetQty, actualQuantity)) {
-        // console.error("The weight is out of tolerance!");
-        showAlert("The weight is out of tolerance!");
-        return;
-      }
-
       const response = await fetch(API_URL + "/material-weighing/stop", {
         method: "POST",
         headers: {
