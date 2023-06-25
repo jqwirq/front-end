@@ -920,7 +920,7 @@ export default function Page() {
       </div>
 
       {isAlert && (
-        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center z-10'>
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center z-20'>
           <div
             className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-200`}
           >
@@ -1021,7 +1021,7 @@ function PrintSAPComponent() {
       </button>
 
       {isOpen && (
-        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center'>
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center z-10'>
           <div
             className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-100`}
           >
