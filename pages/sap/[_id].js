@@ -93,6 +93,9 @@ export default function Page({ responseJson }) {
                 </tbody>
               </table>
             </div>
+            <div className='flex justify-center mt-8'>
+              <button className="p-2 bg-slate-300 hover:brightness-110">print</button>
+            </div>
           </div>
         </>
       )}
