@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { useState, useEffect, useRef, forwardRef } from "react";
+import ReactToPrint, { useReactToPrint } from "react-to-print";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -71,9 +73,10 @@ export default function Page({ responseJson }) {
                     </div>
                   </div>
                 </div>
-                <button className='mt-4 w-full py-2 px-4 bg-slate-300 hover:brightness-105'>
+                {/* <button className='mt-4 w-full py-2 px-4 bg-slate-300 hover:brightness-105'>
                   Print
-                </button>
+                </button> */}
+                <PrintModal sap={sap} />
               </div>
             </div>
             <div className='pt-6 px-8'>
@@ -108,6 +111,201 @@ export default function Page({ responseJson }) {
   );
 }
 
+function PrintModal({ sap }) {
+  const [isOpen, setisOpen] = useState(false);
+
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [allChecked, setAllChecked] = useState(true);
+
+  const handlePrintSAP = useReactToPrint({
+    content: () =>
+      sap && sap !== null && sap.isCompleted
+        ? componentSAPToPrintRef.current
+        : null,
+  });
+
+  useEffect(() => {
+    if (sap && sap !== null) {
+      setCheckedItems(sap.materials);
+    }
+  }, [sap]);
+
+  useEffect(() => {
+    // if any item is unchecked, set allChecked to false
+    if (sap && sap !== null) {
+      if (checkedItems.length !== sap.materials.length) {
+        setAllChecked(false);
+      }
+      // if all items are checked, set allChecked to true
+      else if (checkedItems.length === sap.materials.length) {
+        setAllChecked(true);
+      }
+    }
+  }, [checkedItems, sap]);
+
+  const handleCheckChange = (event, item) => {
+    if (event.target.checked) {
+      setCheckedItems(prevItems => [...prevItems, item]);
+    } else {
+      setCheckedItems(prevItems => prevItems.filter(i => i._id !== item._id));
+    }
+  };
+
+  const handleAllCheckChange = event => {
+    setAllChecked(event.target.checked);
+    if (event.target.checked && sap) {
+      setCheckedItems(sap.materials);
+    } else {
+      setCheckedItems([]);
+    }
+  };
+
+  return (
+    <>
+      <button
+        // className={`basis-1/2 bg-slate-400 py-4 text-sm`}
+        className={`mt-4 w-full py-2 px-4 bg-slate-300 hover:brightness-105`}
+        onClick={() => {
+          setisOpen(true);
+        }}
+        disabled={!sap || sap === null || !sap.isCompleted}
+      >
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 24 24'
+          strokeWidth={1.5}
+          stroke='currentColor'
+          className='w-6 h-6 inline-block'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            d='M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z'
+          />
+        </svg>
+        &nbsp;SAP
+      </button>
+      {/* <button className='mt-4 w-full py-2 px-4 bg-slate-300 hover:brightness-105'>
+        Print
+      </button> */}
+
+      {isOpen && (
+        <div className='bg-slate-900/50 fixed inset-0 flex justify-center items-center z-10'>
+          <div
+            className={`p-6 max-w-[80%] flex flex-col items-center gap-8 bg-slate-100`}
+          >
+            <div className='text-4xl'>
+              {sap && sap !== null ? (
+                <>
+                  <div>
+                    <div className='flex gap-8 text-lg'>
+                      <div className='flex gap-4'>
+                        <div>
+                          <div>SAPOrder No.</div>
+                          <div>Batch No.</div>
+                          <div>Product No.</div>
+                        </div>
+                        <div>
+                          <div>: {sap.no}</div>
+                          <div>: {sap.batchNo}</div>
+                          <div>: {sap.productNo}</div>
+                        </div>
+                      </div>
+                      <div className='flex gap-4'>
+                        <div>
+                          <div>Date</div>
+                          <div>Duration</div>
+                        </div>
+                        <div>
+                          <div>: {formatDate(sap.createdAt)}</div>
+                          <div>: {formatTimeDifference(sap.duration)}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className='text-lg'>
+                      <table className='w-full text-center'>
+                        <thead className=''>
+                          <tr>
+                            <th>
+                              <input
+                                className='cursor-pointer'
+                                type='checkbox'
+                                checked={allChecked}
+                                onChange={handleAllCheckChange}
+                              />
+                            </th>
+                            <th className='p-2'>Material No.</th>
+                            <th className='p-2'>Quantity</th>
+                            <th className='p-2'>Packaging</th>
+                            <th className='p-2'>Duration</th>
+                            {/* <th className='p-2'>Action</th> */}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sap.materials.length !== 0 &&
+                            sap.materials.map(m => (
+                              <tr key={m._id}>
+                                <td>
+                                  <input
+                                    type='checkbox'
+                                    className='cursor-pointer'
+                                    checked={checkedItems.some(
+                                      checkedItem => checkedItem._id === m._id
+                                    )}
+                                    onChange={event =>
+                                      handleCheckChange(event, m)
+                                    }
+                                  />
+                                </td>
+                                <td>{m.no}</td>
+                                <td>{m.quantity} Kg</td>
+                                <td>{m.packaging}</td>
+                                <td>{formatTimeDifference(m.duration)}</td>
+                                <td>
+                                  {/* <PrintMaterialButton material={m} /> */}
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                "Empty"
+              )}
+            </div>
+
+            <div className='w-full flex justify-around'>
+              {sap && sap !== null && (
+                <button
+                  className='text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2'
+                  onClick={handlePrintSAP}
+                >
+                  print
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setisOpen(false);
+                }}
+                className='text-3xl bg-slate-300 hover:bg-slate-400 active:bg-slate-300 p-2'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* <div style={{ display: "none" }}>
+        <ComponentSAPToPrint checkedItems={checkedItems} />
+      </div> */}
+    </>
+  );
+}
+
 function formatDateSimple(timestamp) {
   const date = new Date(timestamp);
 
@@ -120,6 +318,33 @@ function formatDateSimple(timestamp) {
   const year = String(date.getUTCFullYear()).slice(-2);
 
   return `${day}-${month}-${year}`;
+}
+
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const day = weekdays[date.getUTCDay()];
+  const dateNumber =
+    date.getUTCDate() < 10 ? "0" + date.getUTCDate() : date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+
+  return `${day}, ${dateNumber} ${month} ${year}`;
 }
 
 function formatTimeDifference(duration) {
