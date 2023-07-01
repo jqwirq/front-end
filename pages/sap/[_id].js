@@ -54,19 +54,26 @@ export default function Page({ responseJson }) {
                   <div>:&nbsp;{sap.productNo}</div>
                 </div>
               </div>
-              <div className='flex gap-8'>
-                <div>
-                  <div>Date</div>
-                  <div>Duration</div>
-                </div>
-
-                <div>
-                  <div>:&nbsp;{formatDateSimple(sap.createdAt)}</div>
+              <div>
+                <div className='flex gap-8'>
                   <div>
-                    :&nbsp;
-                    {sap.isCompleted ? formatTimeDifference(sap.duration) : "-"}
+                    <div>Date</div>
+                    <div>Duration</div>
+                  </div>
+
+                  <div>
+                    <div>:&nbsp;{formatDateSimple(sap.createdAt)}</div>
+                    <div>
+                      :&nbsp;
+                      {sap.isCompleted
+                        ? formatTimeDifference(sap.duration)
+                        : "-"}
+                    </div>
                   </div>
                 </div>
+                <button className='mt-4 w-full py-2 px-4 bg-slate-300 hover:brightness-105'>
+                  Print
+                </button>
               </div>
             </div>
             <div className='pt-6 px-8'>
@@ -93,9 +100,7 @@ export default function Page({ responseJson }) {
                 </tbody>
               </table>
             </div>
-            <div className='flex justify-center mt-8'>
-              <button className="p-2 bg-slate-300 hover:brightness-110">print</button>
-            </div>
+            <div className='flex justify-center mt-10'></div>
           </div>
         </>
       )}
