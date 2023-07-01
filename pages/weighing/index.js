@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {
+import React, {
   useState,
   useEffect,
   createContext,
@@ -7,7 +7,7 @@ import {
   useRef,
   forwardRef,
 } from "react";
-import { useReactToPrint } from "react-to-print";
+import ReactToPrint, { useReactToPrint } from "react-to-print";
 import styles from "@/styles/sap.module.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -19,6 +19,45 @@ function useWeighingContext() {
 }
 
 const PrintSAP = forwardRef(ComponentSAPToPrint);
+
+const ComponentMaterialYangMauDiPrint = React.forwardRef((props, ref) => {
+  const { material } = props;
+
+  return (
+    <div style={{ fontSize: "14px" }} ref={ref}>
+      <div className='flex gap-4'>
+        <div>
+          <div>Material No</div>
+          <div>Packaging</div>
+          <div>Quantity</div>
+          <div>Date</div>
+          <div>Duration</div>
+        </div>
+        <div>
+          <div>: {material.no}</div>
+          <div>: {material.packaging}</div>
+          <div>: {material.quantity} Kg</div>
+          <div>: {formatDateSimple(material.startTime)}</div>
+          <div>: {formatTimeDifference(material.duration)}</div>
+        </div>
+      </div>
+      <br />
+      <br />
+      <div style={{ display: "flex" }}>
+        <div style={{ flexBasis: "50%" }}>
+          <div style={{ textAlign: "center" }}>Weighing by</div>
+          <br />
+          <br />
+          <br />
+          <br />
+          <br />
+          <div style={{ textAlign: "center" }}>___________</div>
+        </div>
+      </div>
+    </div>
+  );
+});
+ComponentMaterialYangMauDiPrint.displayName = "ComponentMaterialYangMauDiPrint";
 
 export default function Page() {
   const [sap, setSAP] = useState(null);
@@ -190,7 +229,6 @@ export default function Page() {
                     })
                   );
 
-                  console.log("fired");
                   disconnectWebsocket();
                   setMaterial(responseJson.material);
                   resetMaterial();
@@ -289,7 +327,6 @@ export default function Page() {
                       })
                     );
 
-                    console.log("fired");
                     disconnectWebsocket();
                     setMaterial(responseJson.material);
                     resetMaterial();
@@ -1069,6 +1106,7 @@ function PrintSAPComponent() {
                             <th className='p-2'>Quantity</th>
                             <th className='p-2'>Packaging</th>
                             <th className='p-2'>Duration</th>
+                            <th className='p-2'>Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1091,6 +1129,9 @@ function PrintSAPComponent() {
                                 <td>{m.quantity} Kg</td>
                                 <td>{m.packaging}</td>
                                 <td>{formatTimeDifference(m.duration)}</td>
+                                <td>
+                                  <PrintMaterialButton material={m} />
+                                </td>
                               </tr>
                             ))}
                         </tbody>
@@ -1131,6 +1172,29 @@ function PrintSAPComponent() {
     </>
   );
 }
+
+const PrintMaterialButton = ({ material }) => {
+  const componentRef = useRef();
+
+  return (
+    <>
+      <ReactToPrint
+        trigger={() => (
+          <button className='text-blue-500 hover:text-blue-400 underline'>
+            print
+          </button>
+        )}
+        content={() => componentRef.current}
+      />
+      <div style={{ display: "none" }}>
+        <ComponentMaterialYangMauDiPrint
+          ref={componentRef}
+          material={material}
+        />
+      </div>
+    </>
+  );
+};
 
 function Weight() {
   const {
