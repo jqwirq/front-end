@@ -81,7 +81,7 @@ function Page() {
           </Link>
         </div>
 
-        <h1 className='text-5xl text-center pt-6'>SAP List</h1>
+        <h1 className='text-5xl text-center pt-6'>Weighing Result List</h1>
 
         <div className='flex px-6 mt-8'>
           <form
