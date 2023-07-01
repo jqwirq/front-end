@@ -643,28 +643,144 @@ export default function Page() {
     setTolerance(0);
   };
 
+  // useEffect(() => {
+  //   fetch(API_URL + "/products")
+  //     .then(res => {
+  //       return res.json();
+  //     })
+  //     .then(res => {
+  //       setProducts(res.products);
+  //     })
+  //     .then(() => {
+  //       let storagedWP = localStorage.getItem("WP");
+  //       let currentMaterial;
+  //       let currentMaterialNo;
+  //       let currentMaterialProcess;
+  //       if (storagedWP) {
+  //         let WP = JSON.parse(storagedWP);
+  //         // console.log(WP);
+  //         return fetch(API_URL + "/process/" + WP.PID)
+  //           .then(res => {
+  //             return res.json();
+  //           })
+  //           .then(res => {
+  //             // console.log(res);
+  //             const process = res.process;
+  //             setSAP(process);
+
+  //             if (!process.isCompleted) {
+  //               setIsWeighingProcess(true);
+  //             }
+
+  //             sapNoRef.current.value = process.no;
+  //             setSapNo(process.no);
+  //             batchNoRef.current.value = process.batchNo;
+  //             setBatchNo(process.batchNo);
+  //             productNoRef.current.value = process.productNo;
+  //             setProductNo(process.productNo);
+  //             if (WP.targetQty) {
+  //               targetQtyRef.current.value = WP.targetQty;
+  //               setTargetQty(WP.targetQty);
+  //             }
+  //             if (WP.tolerance) {
+  //               toleranceRef.current.value = WP.tolerance;
+  //               setTolerance(WP.tolerance);
+  //             }
+
+  //             if (process.materials.length !== 0) {
+  //               currentMaterial =
+  //                 process.materials[process.materials.length - 1];
+  //               setMaterial(currentMaterial);
+  //               if (!currentMaterial.isCompleted) {
+  //                 setIsMaterialProcess(true);
+  //               }
+  //               currentMaterialNo = currentMaterial.no;
+  //               currentMaterialProcess = currentMaterial.isCompleted;
+  //             }
+
+  //             return fetch(API_URL + "/product/" + process.productNo);
+  //           })
+  //           .then(res => {
+  //             if (!res.ok) {
+  //               // if HTTP status is not 200-299
+  //               if (res.status === 400) {
+  //                 console.error("Bad request");
+  //                 // Handle 400 error
+  //               } else if (res.status === 404) {
+  //                 console.error("No product found with this ID");
+  //                 // Handle 404 error
+  //               } else {
+  //                 throw new Error(`HTTP error! status: ${res.status}`);
+  //               }
+  //             } else {
+  //               return res.json();
+  //             }
+  //           })
+  //           .then(res => {
+  //             if (res) {
+  //               // if res is not undefined
+  //               setProduct(res.product);
+  //               // console.log("handleProductChange", res);
+  //             }
+  //           })
+  //           .then(() => {
+  //             // console.log(storagedWP);
+  //             if (!currentMaterialProcess) {
+  //               materialNoRef.current.value = currentMaterialNo;
+  //               setMaterialNo(currentMaterialNo);
+  //             }
+  //           })
+  //           .then(() => {
+  //             return fetch(API_URL + "/packaging")
+  //               .then(res => {
+  //                 return res.json();
+  //               })
+  //               .then(res => {
+  //                 setPackages(res.data);
+  //                 if (!currentMaterialProcess) {
+  //                   packagingRef.current.value = currentMaterial.packaging;
+  //                   setPackaging(currentMaterial.packaging);
+  //                 }
+  //               });
+  //           });
+  //       } else {
+  //         return fetch(API_URL + "/packaging")
+  //           .then(res => {
+  //             return res.json();
+  //           })
+  //           .then(res => {
+  //             setPackages(res.data);
+  //           });
+  //       }
+  //     })
+  //     .catch(err => console.error(err));
+
+  //   return () => {
+  //     disconnectWebsocket();
+  //   };
+  // }, []);
+
   useEffect(() => {
-    fetch(API_URL + "/products")
-      .then(res => {
-        return res.json();
-      })
-      .then(res => {
-        setProducts(res.products);
-      })
+    let storagedWP = localStorage.getItem("WP");
+    let currentMaterial;
+    let currentMaterialNo;
+    let currentMaterialProcess;
+
+    Promise.all([
+      fetch(API_URL + "/products")
+        .then(res => res.json())
+        .then(res => setProducts(res.products)),
+
+      fetch(API_URL + "/packaging")
+        .then(res => res.json())
+        .then(res => setPackages(res.data)),
+    ])
       .then(() => {
-        let storagedWP = localStorage.getItem("WP");
-        let currentMaterial;
-        let currentMaterialNo;
-        let currentMaterialProcess;
         if (storagedWP) {
           let WP = JSON.parse(storagedWP);
-          // console.log(WP);
           return fetch(API_URL + "/process/" + WP.PID)
+            .then(res => res.json())
             .then(res => {
-              return res.json();
-            })
-            .then(res => {
-              // console.log(res);
               const process = res.process;
               setSAP(process);
 
@@ -724,32 +840,12 @@ export default function Page() {
               }
             })
             .then(() => {
-              // console.log(storagedWP);
               if (!currentMaterialProcess) {
                 materialNoRef.current.value = currentMaterialNo;
                 setMaterialNo(currentMaterialNo);
               }
-            })
-            .then(() => {
-              return fetch(API_URL + "/packaging")
-                .then(res => {
-                  return res.json();
-                })
-                .then(res => {
-                  setPackages(res.data);
-                  if (!currentMaterialProcess) {
-                    packagingRef.current.value = currentMaterial.packaging;
-                    setPackaging(currentMaterial.packaging);
-                  }
-                });
-            });
-        } else {
-          return fetch(API_URL + "/packaging")
-            .then(res => {
-              return res.json();
-            })
-            .then(res => {
-              setPackages(res.data);
+              packagingRef.current.value = currentMaterial.packaging;
+              setPackaging(currentMaterial.packaging);
             });
         }
       })
