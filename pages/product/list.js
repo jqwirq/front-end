@@ -6,23 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function Page() {
   const [products, setProducts] = useState([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null);
-  const [message, setMessage] = useState("");
-
   const productNoRef = useRef();
-
-  const openModal = (type, message) => {
-    setIsModalOpen(true);
-    setModalType(type);
-    setMessage(message);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalType(null);
-    setMessage("");
-  };
 
   const getProducts = () => {
     fetch(API_URL + "/products")
@@ -152,17 +136,6 @@ export default function Page() {
           )}
         </div>
       </div>
-
-      {/* Feedback */}
-      {/* TOLOL */}
-      {/* {isModalOpen && (
-        <FeedbackModal
-          message={message}
-          closeModal={closeModal}
-          modalType={modalType}
-          handleDeleteSubmit={handleDeleteSubmit}
-        />
-      )} */}
     </>
   );
 }
@@ -182,11 +155,6 @@ function TombolDelete({ id, getProducts }) {
     e.preventDefault();
 
     const password = e.target[0].value;
-    // if (password !== "test123") {
-    //   closeModal();
-    //   alert("Wrong password!");
-    //   return;
-    // }
 
     try {
       const response = await fetch(API_URL + "/delete-product/" + id, {
@@ -200,7 +168,6 @@ function TombolDelete({ id, getProducts }) {
       if (!response.ok) {
         if (response.status === 400) {
           const responseJson = await response.json();
-          // openModal(0, responseJson.message);
           alert(responseJson.message);
           return;
         }

@@ -160,104 +160,7 @@ export default function Page() {
       const qty = parseFloat(message.data);
       setActualQuantity(qty);
 
-      const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
-
-      if (!isToleranced) {
-        fetch("http://127.0.0.1:1880" + "/api/light-signal", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ signal: "merah" }),
-        })
-          .then(res => {
-            showAlert("The weight is out of tolerance!");
-            return res.json();
-          })
-          .then(res => {
-            // console.log(res);
-            return;
-          })
-          .catch(err => console.error(err));
-      } else if (isToleranced) {
-        fetch("http://127.0.0.1:1880" + "/api/light-signal", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ signal: "hijau" }),
-        })
-          .then(res => res.json())
-          .then(res => {
-            // Placed the body of handleStopMaterialWeighing function here
-            fetch(API_URL + "/material-weighing/stop", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                id: sap._id,
-                materialId: material._id,
-                quantity: qty,
-                endTime: Date.now(),
-                tolerance,
-                targetQty,
-              }),
-            })
-              .then(response => {
-                if (!response.ok) {
-                  return response.json().then(responseJson => {
-                    const message = responseJson.message;
-                    if (
-                      response.status === 400 ||
-                      response.status === 404 ||
-                      response.status === 409
-                    ) {
-                      showAlert(message);
-                      return;
-                    } else {
-                      return;
-                    }
-                  });
-                }
-
-                return response.json().then(responseJson => {
-                  localStorage.setItem(
-                    "WP",
-                    JSON.stringify({
-                      PID: sap._id,
-                    })
-                  );
-
-                  disconnectWebsocket();
-                  setMaterial(responseJson.material);
-                  resetMaterial();
-                  setIsMaterialProcess(false);
-                  setMaterialTime(0);
-                  setActualQuantity(0);
-                });
-              })
-              .catch(error => console.error(error));
-          })
-          .catch(err => console.error(err));
-      }
-    };
-
-    ws.current.onerror = error => {
-      console.error(error);
-    };
-
-    ws.current.onclose = event => {
-      // console.log(`Disconnected from WebSocket server at ${url}`);
-    };
-  }
-
-  useEffect(() => {
-    if (ws.current) {
-      ws.current.onmessage = message => {
-        const qty = parseFloat(message.data);
-        setActualQuantity(qty);
-
+      if (isMaterialProcess) {
         const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
 
         if (!isToleranced) {
@@ -327,7 +230,7 @@ export default function Page() {
                       })
                     );
 
-                    disconnectWebsocket();
+                    // disconnectWebsocket();
                     setMaterial(responseJson.material);
                     resetMaterial();
                     setIsMaterialProcess(false);
@@ -339,9 +242,110 @@ export default function Page() {
             })
             .catch(err => console.error(err));
         }
+      }
+    };
+
+    ws.current.onerror = error => {
+      console.error(error);
+    };
+
+    ws.current.onclose = event => {
+      // console.log(`Disconnected from WebSocket server at ${url}`);
+    };
+  }
+
+  useEffect(() => {
+    if (ws.current) {
+      ws.current.onmessage = message => {
+        const qty = parseFloat(message.data);
+        setActualQuantity(qty);
+
+        if (isMaterialProcess) {
+          const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
+
+          if (!isToleranced) {
+            fetch("http://127.0.0.1:1880" + "/api/light-signal", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ signal: "merah" }),
+            })
+              .then(res => {
+                showAlert("The weight is out of tolerance!");
+                return res.json();
+              })
+              .then(res => {
+                // console.log(res);
+                return;
+              })
+              .catch(err => console.error(err));
+          } else if (isToleranced) {
+            fetch("http://127.0.0.1:1880" + "/api/light-signal", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ signal: "hijau" }),
+            })
+              .then(res => res.json())
+              .then(res => {
+                // Placed the body of handleStopMaterialWeighing function here
+                fetch(API_URL + "/material-weighing/stop", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    id: sap._id,
+                    materialId: material._id,
+                    quantity: qty,
+                    endTime: Date.now(),
+                    tolerance,
+                    targetQty,
+                  }),
+                })
+                  .then(response => {
+                    if (!response.ok) {
+                      return response.json().then(responseJson => {
+                        const message = responseJson.message;
+                        if (
+                          response.status === 400 ||
+                          response.status === 404 ||
+                          response.status === 409
+                        ) {
+                          showAlert(message);
+                          return;
+                        } else {
+                          return;
+                        }
+                      });
+                    }
+
+                    return response.json().then(responseJson => {
+                      localStorage.setItem(
+                        "WP",
+                        JSON.stringify({
+                          PID: sap._id,
+                        })
+                      );
+
+                      // disconnectWebsocket();
+                      setMaterial(responseJson.material);
+                      resetMaterial();
+                      setIsMaterialProcess(false);
+                      setMaterialTime(0);
+                      setActualQuantity(0);
+                    });
+                  })
+                  .catch(error => console.error(error));
+              })
+              .catch(err => console.error(err));
+          }
+        }
       };
     }
-  }, [actualQuantity, tolerance, targetQty]);
+  }, [actualQuantity, tolerance, targetQty, isMaterialProcess]);
 
   const handleStartWeighingProcess = async () => {
     try {
@@ -554,7 +558,7 @@ export default function Page() {
         })
       );
 
-      disconnectWebsocket();
+      // disconnectWebsocket();
       setMaterial(responseJson.material);
       resetMaterial();
       setIsMaterialProcess(false);
@@ -1603,54 +1607,71 @@ function StartButton() {
 
 function ScaleSelectButton() {
   const { connectWebSocket, isMaterialProcess } = useWeighingContext();
+
+  const [scaleState, setScaleState] = useState("");
+
   return (
     <div className='col-start-1 col-end-5 row-start-5 pb-8 row-end-7 flex flex-col justify-center items-center gap-4 text-4xl'>
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
-          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2ton")}
-          className={`basis-1/2 py-2 ${
-            !isMaterialProcess
-              ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
+          onClick={() => {
+            connectWebSocket("ws://127.0.0.1:1880/ws/2ton");
+            setScaleState("2ton");
+          }}
+          className={`basis-1/2 min-h-[80px] cursor-pointer ${
+            scaleState === "2ton"
+              ? "bg-slate-400 brightness-110 hover:brightness-125 active:brightness-90"
+              : "bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
-          disabled={!isMaterialProcess}
+          // disabled={isMaterialProcess}
         >
           2 Ton
         </button>
 
         <button
-          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350tscale")}
-          className={`basis-1/2 py-2 ${
-            !isMaterialProcess
-              ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
+          onClick={() => {
+            connectWebSocket("ws://127.0.0.1:1880/ws/350tscale");
+            setScaleState("350tscale");
+          }}
+          className={`basis-1/2 min-h-[80px] cursor-pointer ${
+            scaleState === "350tscale"
+              ? "bg-slate-400 brightness-110 hover:brightness-125 active:brightness-90"
+              : "bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
-          disabled={!isMaterialProcess}
+          // disabled={isMaterialProcess}
         >
-          300 TS
+          <div className='text-3xl'>300 Kg</div>
+          <div className='text-lg'>T-Scale</div>
         </button>
       </div>
       <div className='flex w-full gap-4 justify-center items-center'>
         <button
-          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/350jic")}
-          className={`basis-1/2 py-2 ${
-            !isMaterialProcess
-              ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
+          onClick={() => {
+            connectWebSocket("ws://127.0.0.1:1880/ws/350jic");
+            setScaleState("350jic");
+          }}
+          className={`basis-1/2 min-h-[80px] cursor-pointer ${
+            scaleState === "350jic"
+              ? "bg-slate-400 brightness-110 hover:brightness-125 active:brightness-90"
+              : "bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
-          disabled={!isMaterialProcess}
+          // disabled={isMaterialProcess}
         >
-          300 JIC
+          <div className='text-3xl'>300 Kg</div>
+          <div className='text-lg'>JIC</div>
         </button>
 
         <button
-          onClick={() => connectWebSocket("ws://127.0.0.1:1880/ws/2kg")}
-          className={`basis-1/2 py-2 ${
-            !isMaterialProcess
-              ? "bg-slate-400 text-slate-500"
-              : "cursor-pointer bg-slate-300 hover:brightness-110 active:brightness-90"
+          onClick={() => {
+            connectWebSocket("ws://127.0.0.1:1880/ws/2kg");
+            setScaleState("2kg");
+          }}
+          className={`basis-1/2 min-h-[80px] cursor-pointer ${
+            scaleState === "2kg"
+              ? "bg-slate-400 brightness-110 hover:brightness-125 active:brightness-90"
+              : "bg-slate-300 hover:brightness-110 active:brightness-90"
           }`}
-          disabled={!isMaterialProcess}
+          // disabled={isMaterialProcess}
         >
           2 Kg
         </button>
