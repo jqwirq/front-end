@@ -2,17 +2,37 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DATA_LIMIT = 10;
 
 export default function Page() {
   const [products, setProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageNumbers, setPageNumbers] = useState([]);
 
   const productNoRef = useRef();
 
   const getProducts = () => {
-    fetch(API_URL + "/products")
+    fetch(
+      API_URL +
+        `/products?limit=${DATA_LIMIT}&offset=${(currentPage - 1) * DATA_LIMIT}`
+    )
       .then(res => res.json())
       .then(res => {
         setProducts(res.products);
+        const newTotalPages = Math.ceil(res.total / DATA_LIMIT);
+        setTotalPages(newTotalPages);
+
+        const newPageNumbers = [];
+        let leftBound = Math.max(currentPage - 2, 1);
+        let rightBound = Math.min(leftBound + 4, newTotalPages);
+        leftBound = Math.max(rightBound - 4, 1);
+
+        for (let i = leftBound; i <= rightBound; i++) {
+          newPageNumbers.push(i);
+        }
+
+        setPageNumbers(newPageNumbers);
       })
       .catch(err => {
         console.error(err);
@@ -20,23 +40,57 @@ export default function Page() {
   };
 
   useEffect(() => {
-    fetch(API_URL + "/products")
+    fetch(
+      API_URL +
+        `/products?limit=${DATA_LIMIT}&offset=${(currentPage - 1) * DATA_LIMIT}`
+    )
       .then(res => res.json())
       .then(res => {
         setProducts(res.products);
+        const newTotalPages = Math.ceil(res.total / DATA_LIMIT);
+        setTotalPages(newTotalPages);
+
+        const newPageNumbers = [];
+        let leftBound = Math.max(currentPage - 2, 1);
+        let rightBound = Math.min(leftBound + 4, newTotalPages);
+        leftBound = Math.max(rightBound - 4, 1);
+
+        for (let i = leftBound; i <= rightBound; i++) {
+          newPageNumbers.push(i);
+        }
+
+        setPageNumbers(newPageNumbers);
       })
       .catch(err => {
         console.error(err);
       });
-  }, []);
+  }, [currentPage]);
 
   const handleSearchProductSubmit = async e => {
     e.preventDefault();
     const no = productNoRef.current.value;
-    fetch(API_URL + "/products?no=" + no)
+    fetch(
+      API_URL +
+        `/products?no=${no}&limit=${DATA_LIMIT}&offset=${
+          (currentPage - 1) * DATA_LIMIT
+        }`
+    )
       .then(res => res.json())
       .then(res => {
         setProducts(res.products);
+        const newTotalPages = Math.ceil(res.total / DATA_LIMIT);
+        setTotalPages(newTotalPages);
+
+        const newPageNumbers = [];
+        let leftBound = Math.max(currentPage - 2, 1);
+        let rightBound = Math.min(leftBound + 4, newTotalPages);
+        leftBound = Math.max(rightBound - 4, 1);
+
+        for (let i = leftBound; i <= rightBound; i++) {
+          newPageNumbers.push(i);
+        }
+
+        setPageNumbers(newPageNumbers);
       })
       .catch(err => {
         console.error(err);
@@ -77,66 +131,108 @@ export default function Page() {
           )}
 
           {products.length !== 0 && (
-            <table className='table-auto text-lg border-collapse'>
-              <thead className='border-b-2 border-slate-950'>
-                <tr>
-                  <th className='p-2'>Product No.</th>
-                  <th className='p-2'>Created At</th>
-                  <th className='p-2'>Updated At</th>
-                  <th className='p-2'>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((v, i) => {
-                  let createdAt = new Date(v.createdAt);
-                  let updatedAt = new Date(v.updatedAt);
-                  return (
-                    <tr
-                      className='text-center border-b border-slate-950'
-                      key={v.no}
-                    >
-                      <td className='p-2'>{v.no}</td>
-                      <td className='p-2'>
-                        {createdAt.toLocaleString("en-UK")}
-                      </td>
-                      <td className='p-2'>
-                        {updatedAt.toLocaleString("en-UK")}
-                      </td>
-                      <td className='p-2'>
-                        {/* <Modal product={v} /> */}
-                        <div className='flex justify-around'>
-                          <Link
-                            className='text-slate-600 hover:text-slate-500 active:text-slate-600'
-                            href={`/product/details/${v.no}`}
-                          >
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              fill='none'
-                              viewBox='0 0 24 24'
-                              strokeWidth={1.5}
-                              stroke='currentColor'
-                              className='h-6'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                d='M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125'
-                              />
-                            </svg>
-                          </Link>
+            <>
+              <table className='table-auto text-lg border-collapse'>
+                <thead className='border-b-2 border-slate-950'>
+                  <tr>
+                    <th className='p-2'>Product No.</th>
+                    <th className='p-2'>Created At</th>
+                    <th className='p-2'>Updated At</th>
+                    <th className='p-2'>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((v, i) => {
+                    let createdAt = new Date(v.createdAt);
+                    let updatedAt = new Date(v.updatedAt);
+                    return (
+                      <>
+                        <tr
+                          className='text-center border-b border-slate-950'
+                          key={v.no}
+                        >
+                          <td className='p-2'>{v.no}</td>
+                          <td className='p-2'>
+                            {createdAt.toLocaleString("en-UK")}
+                          </td>
+                          <td className='p-2'>
+                            {updatedAt.toLocaleString("en-UK")}
+                          </td>
+                          <td className='p-2'>
+                            {/* <Modal product={v} /> */}
+                            <div className='flex justify-around'>
+                              <Link
+                                className='text-slate-600 hover:text-slate-500 active:text-slate-600'
+                                href={`/product/details/${v.no}`}
+                              >
+                                <svg
+                                  xmlns='http://www.w3.org/2000/svg'
+                                  fill='none'
+                                  viewBox='0 0 24 24'
+                                  strokeWidth={1.5}
+                                  stroke='currentColor'
+                                  className='h-6'
+                                >
+                                  <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    d='M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125'
+                                  />
+                                </svg>
+                              </Link>
 
-                          <TombolDelete id={v._id} getProducts={getProducts} />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                              <TombolDelete
+                                id={v._id}
+                                getProducts={getProducts}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className='text-lg flex justify-center gap-4 mt-4'>
+                {currentPage > 1 && (
+                  <button onClick={() => setCurrentPage(currentPage - 1)}>
+                    &lt;
+                  </button>
+                )}
+
+                {pageNumbers.map(number => (
+                  <PageButton
+                    key={number}
+                    number={number}
+                    currentPage={currentPage}
+                    onPageChange={num => {
+                      setCurrentPage(num);
+                    }}
+                  />
+                ))}
+
+                {currentPage < totalPages && (
+                  <button onClick={() => setCurrentPage(currentPage + 1)}>
+                    &gt;
+                  </button>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
     </>
+  );
+}
+
+function PageButton({ number, currentPage, onPageChange }) {
+  return (
+    <button
+      style={{ fontWeight: number === currentPage ? "bold" : "normal" }}
+      onClick={() => onPageChange(number)}
+    >
+      {number}
+    </button>
   );
 }
 
