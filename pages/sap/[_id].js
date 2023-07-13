@@ -202,7 +202,7 @@ export default function Page({ responseJson }) {
 
   return (
     <div className='min-h-screen max-h-screen flex flex-col'>
-      <div className='bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center'>
+      <div className='bg-slate-900 shrink-0 text-slate-200 basis-12 px-6 flex justify-between items-center'>
         <Link
           className='text-xl hover:text-slate-300 active:text-slate-200'
           href='/sap/list'
@@ -221,7 +221,7 @@ export default function Page({ responseJson }) {
 
       {responseJson?.sap && (
         <>
-          <div className='text-xl grow flexpt-8 px-12'>
+          <div className='text-xl grow overflow-hidden flex flex-col pb-8 px-12'>
             <div className='flex justify-around pt-8'>
               <div className='flex gap-8'>
                 <div className='flex flex-col gap-2'>
@@ -259,7 +259,7 @@ export default function Page({ responseJson }) {
                 <PrintModal sap={sap} />
               </div>
             </div>
-            <div className='pt-6 px-8'>
+            <div className='pt-6 overflow-scroll px-8'>
               <table className='w-full text-center'>
                 <thead className='border-t-2 border-slate-950'>
                   <tr className='border-b-2 border-slate-950'>

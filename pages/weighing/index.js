@@ -59,6 +59,19 @@ const ComponentMaterialYangMauDiPrint = React.forwardRef((props, ref) => {
 });
 ComponentMaterialYangMauDiPrint.displayName = "ComponentMaterialYangMauDiPrint";
 
+function toleranceState(tolerance, target, actual) {
+  let lowerLimit = target - tolerance;
+  let upperLimit = target + tolerance;
+
+  if (actual < lowerLimit) {
+    return "2";
+  } else if (actual > upperLimit) {
+    return "3";
+  } else {
+    return "9";
+  }
+}
+
 export default function Page() {
   const [sap, setSAP] = useState(null);
   const [product, setProduct] = useState(null);
@@ -96,14 +109,14 @@ export default function Page() {
   const componentSAPToPrintRef = useRef();
   const componentMaterialToPrintRef = useRef();
 
-  const showAlert = message => {
-    setIsAlert(true);
-    setAlertMessage(message);
-  };
-
   const closeAlert = () => {
     setIsAlert(false);
     setAlertMessage("");
+  };
+
+  const showAlert = message => {
+    setIsAlert(true);
+    setAlertMessage(message);
   };
 
   const handlePrintMaterial = useReactToPrint({
@@ -162,6 +175,7 @@ export default function Page() {
 
       if (isMaterialProcess) {
         const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
+        const tState = toleranceState(tolerance, targetQty, qty);
 
         if (!isToleranced) {
           fetch("http://127.0.0.1:1880" + "/api/light-signal", {
@@ -169,10 +183,20 @@ export default function Page() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ signal: "merah" }),
+            body: JSON.stringify({
+              signal: tState,
+            }),
           })
             .then(res => {
-              showAlert("The weight is out of tolerance!");
+              showAlert(
+                `Your weight is ${
+                  tState === "2" ? "below" : "exceed"
+                } the designated tolerance level.`
+              );
+              setTimeout(() => {
+                setIsAlert(false);
+                setAlertMessage("");
+              }, 5000);
               return res.json();
             })
             .then(res => {
@@ -186,7 +210,7 @@ export default function Page() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ signal: "hijau" }),
+            body: JSON.stringify({ signal: "1" }),
           })
             .then(res => res.json())
             .then(res => {
@@ -230,12 +254,21 @@ export default function Page() {
                       })
                     );
 
+                    showAlert(`Data saved with ${qty} Kg`);
+                    setTimeout(() => {
+                      setIsAlert(false);
+                      setAlertMessage("");
+                    }, 3000);
+
                     // disconnectWebsocket();
+                    // console.log(responseJson);
+                    setSAP(responseJson.process);
                     setMaterial(responseJson.material);
                     resetMaterial();
                     setIsMaterialProcess(false);
                     setMaterialTime(0);
-                    setActualQuantity(0);
+                    setActualQuantity(parseFloat(qty));
+                    // setActualQuantity(0);
                   });
                 })
                 .catch(error => console.error(error));
@@ -255,6 +288,8 @@ export default function Page() {
   }
 
   useEffect(() => {
+    console.log(sap);
+
     if (ws.current) {
       ws.current.onmessage = message => {
         const qty = parseFloat(message.data);
@@ -262,6 +297,7 @@ export default function Page() {
 
         if (isMaterialProcess) {
           const isToleranced = isQuantityToleranced(tolerance, targetQty, qty);
+          const tState = toleranceState(tolerance, targetQty, qty);
 
           if (!isToleranced) {
             fetch("http://127.0.0.1:1880" + "/api/light-signal", {
@@ -269,10 +305,20 @@ export default function Page() {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ signal: "merah" }),
+              body: JSON.stringify({
+                signal: tState,
+              }),
             })
               .then(res => {
-                showAlert("The weight is out of tolerance!");
+                showAlert(
+                  `Your weight is ${
+                    tState === "2" ? "below" : "exceed"
+                  } the designated tolerance level.`
+                );
+                setTimeout(() => {
+                  setIsAlert(false);
+                  setAlertMessage("");
+                }, 3000);
                 return res.json();
               })
               .then(res => {
@@ -286,7 +332,7 @@ export default function Page() {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ signal: "hijau" }),
+              body: JSON.stringify({ signal: "1" }),
             })
               .then(res => res.json())
               .then(res => {
@@ -331,11 +377,21 @@ export default function Page() {
                       );
 
                       // disconnectWebsocket();
+                      // console.log(responseJson.process);
+
+                      showAlert(`Data saved with ${qty} Kg`);
+                      setTimeout(() => {
+                        setIsAlert(false);
+                        setAlertMessage("");
+                      }, 3000);
+
+                      setSAP(responseJson.process);
                       setMaterial(responseJson.material);
                       resetMaterial();
                       setIsMaterialProcess(false);
                       setMaterialTime(0);
-                      setActualQuantity(0);
+                      // setActualQuantity(0);
+                      setActualQuantity(parseFloat(qty));
                     });
                   })
                   .catch(error => console.error(error));
@@ -466,6 +522,8 @@ export default function Page() {
         return;
       }
 
+      setActualQuantity(0);
+
       const response = await fetch(API_URL + "/material-weighing/start", {
         method: "POST",
         headers: {
@@ -559,6 +617,7 @@ export default function Page() {
       );
 
       // disconnectWebsocket();
+      setSAP(responseJson.SAP);
       setMaterial(responseJson.material);
       resetMaterial();
       setIsMaterialProcess(false);
@@ -976,7 +1035,7 @@ export default function Page() {
         }`}
       >
         <div className='min-h-screen max-h-screen flex flex-col'>
-          <div className='bg-slate-900 text-slate-200 basis-12 px-6 flex justify-between items-center'>
+          <div className='bg-slate-900 text-slate-200 basis-12 shrink-0 px-6 flex justify-between items-center'>
             <div
               className={`text-xl ${
                 !isWeighingProcess
@@ -1607,7 +1666,8 @@ function StartButton() {
 }
 
 function ScaleSelectButton() {
-  const { connectWebSocket, isMaterialProcess } = useWeighingContext();
+  const { connectWebSocket, isMaterialProcess, setActualQuantity } =
+    useWeighingContext();
 
   const [scaleState, setScaleState] = useState("");
 
@@ -1618,6 +1678,9 @@ function ScaleSelectButton() {
           onClick={() => {
             connectWebSocket("ws://127.0.0.1:1880/ws/2ton");
             setScaleState("2ton");
+            if (scaleState !== "2ton") {
+              setActualQuantity(0);
+            }
           }}
           className={`basis-1/2 min-h-[80px] cursor-pointer ${
             scaleState === "2ton"
@@ -1633,6 +1696,9 @@ function ScaleSelectButton() {
           onClick={() => {
             connectWebSocket("ws://127.0.0.1:1880/ws/350tscale");
             setScaleState("350tscale");
+            if (scaleState !== "350tscale") {
+              setActualQuantity(0);
+            }
           }}
           className={`basis-1/2 min-h-[80px] cursor-pointer ${
             scaleState === "350tscale"
@@ -1650,6 +1716,9 @@ function ScaleSelectButton() {
           onClick={() => {
             connectWebSocket("ws://127.0.0.1:1880/ws/350jic");
             setScaleState("350jic");
+            if (scaleState !== "350jic") {
+              setActualQuantity(0);
+            }
           }}
           className={`basis-1/2 min-h-[80px] cursor-pointer ${
             scaleState === "350jic"
@@ -1666,6 +1735,9 @@ function ScaleSelectButton() {
           onClick={() => {
             connectWebSocket("ws://127.0.0.1:1880/ws/2kg");
             setScaleState("2kg");
+            if (scaleState !== "2kg") {
+              setActualQuantity(0);
+            }
           }}
           className={`basis-1/2 min-h-[80px] cursor-pointer ${
             scaleState === "2kg"

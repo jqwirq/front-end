@@ -63,11 +63,7 @@ function Page() {
 
   useEffect(() => {
     getSAP();
-  }, [currentPage]);
-
-  useEffect(() => {
-    getSAP();
-  }, [noQuery, startDate, endDate]);
+  }, [currentPage, noQuery, startDate, endDate]);
 
   return (
     <>

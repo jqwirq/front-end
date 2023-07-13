@@ -71,9 +71,7 @@ export default function Page() {
     const no = productNoRef.current.value;
     fetch(
       API_URL +
-        `/products?no=${no}&limit=${DATA_LIMIT}&offset=${
-          (currentPage - 1) * DATA_LIMIT
-        }`
+        `/products?no=${no}&limit=${DATA_LIMIT}`
     )
       .then(res => res.json())
       .then(res => {
@@ -125,7 +123,7 @@ export default function Page() {
           </form>
         </div>
 
-        <div className='grow flex flex-col gap-6 md:px-[8%] lg:px-[10%]'>
+        <div className='grow flex flex-col gap-2 md:px-[8%] lg:px-[10%]'>
           {products.length === 0 && (
             <div className='text-center grow text-slate-400'>empty</div>
           )}
@@ -153,10 +151,16 @@ export default function Page() {
                         >
                           <td className='p-2'>{v.no}</td>
                           <td className='p-2'>
-                            {createdAt.toLocaleString("en-UK")}
+                            {createdAt.toLocaleString("en-UK", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
                           </td>
                           <td className='p-2'>
-                            {updatedAt.toLocaleString("en-UK")}
+                            {updatedAt.toLocaleString("en-UK", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
                           </td>
                           <td className='p-2'>
                             {/* <Modal product={v} /> */}
