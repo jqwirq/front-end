@@ -396,7 +396,7 @@ function PrintModal({ sap }) {
                         </div>
                       </div>
                     </div>
-                    <div className='text-lg'>
+                    <div className='text-lg max-h-[480px] overflow-auto'>
                       <table className='w-full text-center'>
                         <thead className=''>
                           <tr>

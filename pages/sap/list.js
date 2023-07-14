@@ -13,21 +13,6 @@ function Page() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const handleSearchSubmit = e => {
-    e.preventDefault();
-
-    const no = e.target[0].value;
-    const start = e.target[1].valueAsDate?.toISOString() || "";
-    const end = e.target[2].valueAsDate?.toISOString() || "";
-
-    setNoQuery(no);
-    setStartDate(start);
-    setEndDate(end);
-    setCurrentPage(1);
-
-    getSAP(no, start, end, 1);
-  };
-
   const getSAP = (
     no = noQuery,
     start = startDate,
@@ -61,8 +46,37 @@ function Page() {
       });
   };
 
+  const handleSearchSubmit = e => {
+    e.preventDefault();
+
+    const no = e.target[0].value;
+    const start = e.target[1].valueAsDate?.toISOString() || "";
+    const end = e.target[2].valueAsDate?.toISOString() || "";
+
+    setNoQuery(no);
+    setStartDate(start);
+    setEndDate(end);
+    setCurrentPage(1);
+
+    getSAP(no, start, end, 1);
+  };
+
   useEffect(() => {
-    getSAP();
+    let myQuery = localStorage.getItem("RESULT_QUERY");
+    let parsedQuery;
+
+    if (myQuery) {
+      parsedQuery = JSON.parse(myQuery);
+      let { no, start, end, page } = parsedQuery;
+      getSAP(no, start, end, page);
+      setNoQuery(no);
+      setStartDate(start);
+      setEndDate(end);
+      setCurrentPage(page);
+      localStorage.removeItem("RESULT_QUERY");
+    } else {
+      getSAP(noQuery, startDate, endDate, currentPage);
+    }
   }, [currentPage, noQuery, startDate, endDate]);
 
   return (
@@ -90,6 +104,7 @@ function Page() {
                 type='text'
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
               />
+              <button type='button'>X</button>
             </div>
             {/* <div className="flex gap-4">
                 <div>Batch No. :</div>
@@ -98,9 +113,15 @@ function Page() {
             <div className='flex items-center gap-2'>
               <input
                 onChange={e => {
-                  const value = e.target.valueAsDate.toISOString();
+                  const value = e.target.valueAsDate;
+                  let date;
+                  if (value) {
+                    date = value.toISOString();
+                    setStartDate(date);
+                  } else {
+                    setStartDate("");
+                  }
                   setCurrentPage(1);
-                  setStartDate(value);
                 }}
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 type='date'
@@ -110,9 +131,15 @@ function Page() {
                 type='date'
                 className='py-1 px-2 border-2 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500'
                 onChange={e => {
-                  const value = e.target.valueAsDate.toISOString();
+                  const value = e.target.valueAsDate;
+                  let date;
+                  if (value) {
+                    date = value.toISOString();
+                    setEndDate(date);
+                  } else {
+                    setEndDate("");
+                  }
                   setCurrentPage(1);
-                  setEndDate(value);
                 }}
               />
             </div>
@@ -159,6 +186,17 @@ function Page() {
                           <Link
                             className='text-slate-500 hover:text-slate-700'
                             href={`/sap/${s._id}`}
+                            onClick={() => {
+                              localStorage.setItem(
+                                "RESULT_QUERY",
+                                JSON.stringify({
+                                  no: noQuery,
+                                  start: startDate,
+                                  end: endDate,
+                                  page: currentPage,
+                                })
+                              );
+                            }}
                           >
                             details
                           </Link>
