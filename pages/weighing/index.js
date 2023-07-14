@@ -60,8 +60,9 @@ const ComponentMaterialYangMauDiPrint = React.forwardRef((props, ref) => {
 ComponentMaterialYangMauDiPrint.displayName = "ComponentMaterialYangMauDiPrint";
 
 function toleranceState(tolerance, target, actual) {
-  let lowerLimit = target - tolerance;
-  let upperLimit = target + tolerance;
+  let toleranceValue = target * (tolerance / 100);
+  let lowerLimit = target - toleranceValue;
+  let upperLimit = target + toleranceValue;
 
   if (actual < lowerLimit) {
     return "2";
